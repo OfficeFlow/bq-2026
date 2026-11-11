@@ -27,6 +27,7 @@
   button:disabled { opacity: .45; }
   button.breed { width: 100%; font-size: 18px; margin-top: 12px; }
   button.rood { background: var(--rood); color: #fff; } button.groen { background: var(--groen); color: #fff; }
+  button.groot-knop { flex: 1; padding: 22px 16px; font-size: 22px; }
   button.stil { background: rgba(255,255,255,.1); color: #fff; } button.klein { padding: 8px 10px; font-size: 14px; border-radius: 9px; }
   .opties { display: grid; gap: 10px; margin-top: 12px; }
   .optie { display: flex; gap: 12px; align-items: center; text-align: left; background: #0e1930; color: #fff; border: 2px solid rgba(255,255,255,.2); font-weight: 600; }
@@ -244,7 +245,7 @@ function tekenTeam() {
 const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
 
 /* ================= BANK ================= */
-let pin = (() => { try { return sessionStorage.getItem("bq_pin"); } catch { return null; } })(), H = null, V = [], hsig = "", ronde = null, hfout = "", resetTekst = "", boek = {};
+let pin = (() => { try { return sessionStorage.getItem("bq_pin"); } catch { return null; } })(), H = null, V = [], hsig = "", ronde = null, hfout = "", resetTekst = "", boek = {}, meer = false;
 
 async function bankStart(melding) {
   if (!pin) {
@@ -263,38 +264,42 @@ async function actie(fn, args) { hfout = ""; try { const r = await rpc(fn, Objec
 function tekenBank() {
   const actief = document.activeElement && document.activeElement.tagName === "INPUT" ? document.activeElement.id : null;
   const d = H, v = d.vraag, rondes = [...new Set(V.map((x) => x.ronde))], lijst = V.filter((x) => x.ronde === ronde);
-  const volgende = v ? V.find((x) => x.id === v.id + 1) : V[0];
+  const volgende = v ? V.find((x) => x.id === v.id + 1) : V[0], vorige = v ? V.find((x) => x.id === v.id - 1) : null;
+  const nakijken = d.inzendingen.filter((i) => i.status === "open" && i.antwoord !== null).length, laatste = v && (!volgende || volgende.ronde !== v.ronde);
   const faseNaam = { wacht: "Wachten", open: "OPEN", dicht: "Dicht", stand: "Stand op telefoons" }[d.fase];
   let h = kop(`<div class="fiches">${faseNaam}</div>`) + `<div class="kolommen"><div>`;
-  h += `<div class="kaart"><div class="rij">${rondes.map((r) => `<button class="klein ${r === ronde ? "" : "stil"}" data-r="${esc(r)}">${esc(r.replace("Ronde ", "R"))}</button>`).join("")}</div>
+  if (meer) h += `<div class="kaart"><div class="rij">${rondes.map((r) => `<button class="klein ${r === ronde ? "" : "stil"}" data-r="${esc(r)}">${esc(r.replace("Ronde ", "R"))}</button>`).join("")}</div>
     <div class="vragen">${lijst.map((x) => `<button class="klein ${v && v.id === x.id ? "nu" : ""} ${x.gesloten ? "klaar" : "stil"}" data-open="${x.id}" title="${esc(x.tekst)}">${esc(x.nr)}</button>`).join("")}</div>
     <p class="sub"><small>Tik op een nummer om die vraag open te zetten. Groen = al geweest.</small></p></div>`;
   if (v) {
     h += `<div class="kaart"><div class="label">${esc(v.ronde)} · vraag ${esc(v.nr)} · ${faseNaam}</div><h2>${esc(v.tekst)}</h2>
       <div class="sleutel"><b>Antwoord:</b> ${esc(v.antwoord)}</div>
-      <div class="rij" style="margin-top:12px">
-        ${d.fase === "open" ? `<button class="rood" data-fase="dicht">Sluit vraag</button>` : `<button class="stil" data-fase="open">Heropen</button>`}
-        ${volgende ? `<button data-open="${volgende.id}">Volgende: ${esc(volgende.ronde.replace("Ronde ", "R"))} · ${esc(volgende.nr)}</button>` : ""}
-        <button class="stil" data-fase="stand">Stand tonen</button><button class="stil" data-fase="wacht">Wachtscherm</button>
-      </div>`;
+      <div class="rij" style="margin-top:14px">
+        ${vorige ? `<button class="stil" data-open="${vorige.id}" title="Terug naar de vorige vraag">◀ Vorige</button>` : ""}
+        ${d.fase === "open" ? `<button class="rood groot-knop" data-fase="dicht">Stop de vraag</button>` : volgende ? `<button class="groot-knop" data-open="${volgende.id}">Volgende vraag ▶</button>` : `<button class="groot-knop" data-fase="stand">Einde: toon de stand op de telefoons</button>`}
+      </div>
+      ${d.fase !== "open" && nakijken ? `<p class="sub" style="color:#FFD98A"><b>Nog ${nakijken} ${nakijken === 1 ? "antwoord" : "antwoorden"} na te kijken.</b></p>` : ""}
+      ${meer ? `<div class="rij" style="margin-top:10px">${d.fase === "open" ? "" : `<button class="stil klein" data-fase="open">Heropen</button>`}<button class="stil klein" data-fase="stand">Stand op telefoons</button><button class="stil klein" data-fase="wacht">Wachtscherm</button></div>` : ""}`;
     if (v.modus === "waarde") h += `<div class="rij" style="margin-top:10px"><small>Waarde nu:</small>${[3, 2, 1].map((n, i) => `<button class="klein ${d.waarde === n ? "" : "stil"}" data-w="${n}">Stap ${i + 1} · ${n}</button>`).join("")}</div>`;
     if (v.modus === "pot") h += `<div class="rij" style="margin-top:10px"><button class="groen" id="pot">Reken de pot uit</button><small>Dichtstbij pakt de pot, iedereen legt 1 in.</small></div>`;
-    if (v.modus === "bank") h += `<div class="rij" style="margin-top:10px"><button class="stil klein" id="bankalles">Einde ronde: alle stapels banken</button></div>`;
-    if (v.ronde === "Ronde 1" || v.ronde === "Ronde 3") h += `<div class="rij" style="margin-top:10px"><button class="groen klein" id="rondegok">Einde ronde: reken de rondegok af</button><small>${v.ronde === "Ronde 1" ? "Minstens 6 goed = inzet verdubbeld." : "Wie op het slechtste duo wedde, wint."}</small></div>`;
+    if (v.modus === "bank" && (meer || (laatste && d.fase !== "open"))) h += `<div class="rij" style="margin-top:10px"><button class="groen klein" id="bankalles">Einde ronde: alle stapels banken</button></div>`;
+    if ((v.ronde === "Ronde 1" || v.ronde === "Ronde 3") && (meer || (laatste && d.fase !== "open"))) h += `<div class="rij" style="margin-top:10px"><button class="groen klein" id="rondegok">Einde ronde: reken de rondegok af</button><small>${v.ronde === "Ronde 1" ? "Minstens 6 goed = inzet verdubbeld." : "Wie op het slechtste duo wedde, wint."}</small></div>`;
     h += `<table style="margin-top:12px"><tr><th>Team</th><th>Antwoord</th><th>Tijd</th><th>Inzet</th><th></th><th></th></tr>
       ${d.inzendingen.length ? d.inzendingen.map((i) => `<tr><td><b>${esc(i.team)}</b></td><td>${i.antwoord === null ? "<small>alleen inzet</small>" : esc(i.antwoord)}</td><td>${i.ms == null ? "" : (i.ms / 1000).toFixed(1) + " s"}</td>
         <td>${v.modus === "waarde" ? i.waarde : i.inzet || ""}</td><td><span class="tag ${i.status}">${i.status === "inzet" ? "inzet" : i.status}${i.status === "goed" || i.status === "fout" ? " " + (i.delta > 0 ? "+" : "") + i.delta : ""}</span></td>
-        <td class="rij">${i.antwoord === null || v.soort === "sukkel" ? "" : `<button class="klein groen" data-keur="${i.id}" data-g="1">Goed</button><button class="klein rood" data-keur="${i.id}" data-g="0">Fout</button>`}</td></tr>`).join("") : `<tr><td colspan="6"><small>Nog geen antwoorden.</small></td></tr>`}</table></div>`;
-  } else h += `<div class="kaart"><h2>Nog geen vraag open</h2><p class="sub">Tik hierboven op vraag 1 om te beginnen.</p></div>`;
+        <td class="rij">${i.antwoord === null || v.soort === "sukkel" || (v.soort === "mc" && !meer) ? "" : `<button class="klein groen" data-keur="${i.id}" data-g="1">Goed</button><button class="klein rood" data-keur="${i.id}" data-g="0">Fout</button>`}</td></tr>`).join("") : `<tr><td colspan="6"><small>Nog geen antwoorden.</small></td></tr>`}</table></div>`;
+  } else h += `<div class="kaart"><h2>Nog geen vraag open</h2><p class="sub">Wacht tot alle duo's zijn ingelogd. Daarna start je de quiz.</p><div class="rij" style="margin-top:14px"><button class="groot-knop" data-open="${V[0].id}">Start de quiz ▶</button></div></div>`;
   if (hfout) h += `<div class="kaart fouttekst">${esc(hfout)}</div>`;
   h += `</div><div><div class="kaart"><h2>Stand</h2><table><tr><th>Team</th><th>Fiches</th><th>Weg</th><th>Boeken</th></tr>
     ${[...d.teams].sort((a, b) => b.fiches - a.fiches).map((t) => `<tr><td>${t.bezet ? "<b>" + esc(t.naam) + "</b>" : "<small>Duo " + t.id + " (vrij)</small>"}${t.stapel ? `<br><small>stapel ${t.stapel}</small>` : ""}${t.shots ? `<br><small>🥃 ${t.shots}× bijgekocht</small>` : ""}</td><td><b>${t.fiches}</b></td><td>${t.weg ? `<span class="tag fout">${t.weg}×</span>` : ""}</td>
-      <td><div class="rij"><button class="klein rood" data-pm="${t.id}" data-d="-1">−1</button><button class="klein groen" data-pm="${t.id}" data-d="1">+1</button><input type="number" id="b${t.id}" value="${esc(boek[t.id] ?? "")}" placeholder="±" style="width:70px;padding:8px;font-size:15px"><button class="klein" data-boek="${t.id}">Boek</button><button class="klein rood" data-straf="${t.id}" title="Betrapt op googelen: 3 fiches eraf">−3</button>${t.bezet ? `<button class="klein stil" data-vrij="${t.id}" title="Plek vrijgeven">↺</button>` : ""}</div></td></tr>`).join("")}</table>
-    <p class="sub"><small>Boek: zelf een aantal erbij of eraf. −3: betrapt op googelen. ↺ geeft de plek van een duo vrij (twee keer tikken).</small></p></div>
+      <td><div class="rij"><button class="klein rood" data-pm="${t.id}" data-d="-1">−1</button><button class="klein groen" data-pm="${t.id}" data-d="1">+1</button>${!meer ? "" : `<input type="number" id="b${t.id}" value="${esc(boek[t.id] ?? "")}" placeholder="±" style="width:70px;padding:8px;font-size:15px"><button class="klein" data-boek="${t.id}">Boek</button><button class="klein rood" data-straf="${t.id}" title="Betrapt op googelen: 3 fiches eraf">−3</button>${t.bezet ? `<button class="klein stil" data-vrij="${t.id}" title="Plek vrijgeven">↺</button>` : ""}`}</div></td></tr>`).join("")}</table>
+    ${meer ? `<p class="sub"><small>Boek: zelf een aantal erbij of eraf. −3: betrapt op googelen. ↺ geeft de plek van een duo vrij (twee keer tikken).</small></p>` : ""}</div>
     <div class="kaart"><h2>Meldingen</h2>${d.meldingen.length ? d.meldingen.map((m) => `<div class="melding ${m.soort === "weg" && m.fase === "open" ? "weg" : ""}">${esc(m.op)} · <b>${esc(m.team)}</b> ${m.soort === "weg" ? "verliet de pagina" : m.soort === "shot" ? "kocht 3 fiches: shotje! 🥃" : "is terug"}${m.vraag ? " (" + esc(m.vraag) + ", " + esc(m.fase) + ")" : ""}</div>`).join("") : "<small>Nog niets.</small>"}</div>
-    <div class="kaart"><h2>Alles wissen</h2><p class="sub"><small>Wist alle antwoorden, teams en de stand. Typ RESET en tik op de knop.</small></p><div class="rij" style="margin-top:8px"><input type="text" id="reset" value="${esc(resetTekst)}" style="width:140px;padding:8px;font-size:15px"><button class="klein rood" id="doereset">Wis alles</button></div></div>
+    <div class="rij" style="margin-bottom:12px"><button class="stil klein" id="meer">${meer ? "Minder opties ▴" : "Meer opties ▾"}</button></div>
+    ${!meer ? "" : `<div class="kaart"><h2>Alles wissen</h2><p class="sub"><small>Wist alle antwoorden, teams en de stand. Typ RESET en tik op de knop.</small></p><div class="rij" style="margin-top:8px"><input type="text" id="reset" value="${esc(resetTekst)}" style="width:140px;padding:8px;font-size:15px"><button class="klein rood" id="doereset">Wis alles</button></div></div>`}
   </div></div>`;
   app.innerHTML = h;
+  document.getElementById("meer").onclick = () => { meer = !meer; tekenBank(); };
   app.querySelectorAll("[data-r]").forEach((b) => b.onclick = () => { ronde = b.dataset.r; tekenBank(); });
   app.querySelectorAll("[data-open]").forEach((b) => b.onclick = () => { const x = V.find((q) => q.id === +b.dataset.open); ronde = x.ronde; actie("quiz_host_open", { p_vraag: x.id }); });
   app.querySelectorAll("[data-fase]").forEach((b) => b.onclick = () => actie("quiz_host_fase", { p_fase: b.dataset.fase }));
@@ -308,8 +313,8 @@ function tekenBank() {
   const rg = document.getElementById("rondegok"); if (rg) rg.onclick = () => actie("quiz_host_rondegok", { p_ronde: v.ronde });
   app.querySelectorAll("[data-pm]").forEach((b) => b.onclick = () => actie("quiz_host_boek", { p_team: +b.dataset.pm, p_delta: +b.dataset.d, p_reden: "bank" }));
   app.querySelectorAll("[data-straf]").forEach((b) => b.onclick = () => { if (b.dataset.zeker) actie("quiz_host_boek", { p_team: +b.dataset.straf, p_delta: -3, p_reden: "googelen" }); else { b.dataset.zeker = "1"; b.textContent = "Zeker?"; } });
-  const rs = document.getElementById("reset"); rs.oninput = () => { resetTekst = rs.value; };
-  document.getElementById("doereset").onclick = () => { if (resetTekst.trim() !== "RESET") { hfout = "Typ eerst RESET in het vakje."; return tekenBank(); } resetTekst = ""; actie("quiz_host_reset", { p_zeker: "RESET" }); };
+  const rs = document.getElementById("reset"); if (rs) rs.oninput = () => { resetTekst = rs.value; };
+  const dr = document.getElementById("doereset"); if (dr) dr.onclick = () => { if (resetTekst.trim() !== "RESET") { hfout = "Typ eerst RESET in het vakje."; return tekenBank(); } resetTekst = ""; actie("quiz_host_reset", { p_zeker: "RESET" }); };
   if (actief) { const el = document.getElementById(actief); if (el) { el.focus(); const n = el.value.length; try { el.setSelectionRange(n, n); } catch {} } }
 }
 
