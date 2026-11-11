@@ -106,6 +106,8 @@
   @keyframes tik { from { transform: scale(2.2); opacity: 0; } 30% { opacity: 1; } to { transform: scale(1); opacity: 1; } }
   .kr-stof { position: absolute; bottom: 6%; width: 2.2vh; height: 2.2vh; border-radius: 50%; background: rgba(255,246,224,.8); animation: stof .75s ease-out forwards; pointer-events: none; z-index: 1; }
   @keyframes stof { to { transform: translate(-5vh, -2.2vh) scale(2.8); opacity: 0; } }
+  .shotje { margin: 14px 0 4px; padding: 12px 10px; border-radius: 14px; text-align: center; font: 800 30px Georgia, serif; background: var(--goud); color: var(--blauw); }
+  .drink { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: rgba(233,185,73,.16); border: 1px solid var(--goud); font-size: 17px; }
 </style>
 </head>
 <body>
@@ -334,6 +336,8 @@ function tekenTeam() {
         h += `<p class="sub">Jullie antwoord: <b>${esc(m.antwoord)}</b></p><div class="groot ${st[0]}">${st[1]}</div>`;
         if (m.status !== "open" && v.modus !== "bank") h += `<p class="sub midden">${m.delta > 0 ? "+" : ""}${m.delta} ${Math.abs(m.delta) === 1 ? "fiche" : "fiches"}</p>`;
       }
+      if (m && m.shot === "ja") h += `<div class="shotje">🥃 1 shotje!</div>`;
+      else if (m && m.shot === "vol" && d.shots) h += `<p class="sub midden">Geen shotje: je max van ${d.shots.max} deze ronde is op.</p>`;
       if (v.modus === "bank" && d.bank) {
         h += `<p class="sub midden">Stapel: <b>${d.bank.stapel}</b></p>`;
         if (d.bank.gedaan) h += `<p class="sub midden goed">Gebankt. Je begint weer bij 1.</p>`;
@@ -342,7 +346,7 @@ function tekenTeam() {
     }
     h += `</div>`;
   }
-  h += `<p class="midden"><small>${esc(d.team)} · verlaat deze pagina niet tijdens een vraag</small></p>`;
+  h += `<p class="midden"><small>${esc(d.team)}${d.shots && d.shots.max > 0 && d.shots.totaal > 0 ? " · 🥃 " + d.shots.totaal + (d.shots.totaal === 1 ? " shotje" : " shotjes") : ""} · verlaat deze pagina niet tijdens een vraag</small></p>`;
   app.innerHTML = h;
   const a = document.getElementById("antw"); if (a) a.oninput = () => { tekst = a.value; };
   const al = document.getElementById("allin"); if (al) al.oninput = () => { inzetKeuze = al.value === "" ? null : +al.value; };
@@ -396,7 +400,7 @@ function tekenBank() {
   const volgende = v ? V.find((x) => x.id === v.id + 1) : V[0], vorige = v ? V.find((x) => x.id === v.id - 1) : null;
   const bezetN = d.teams.filter((t) => t.bezet).length, goedN = d.inzendingen.filter((i) => i.status === "goed").length;
   const stapKan = !!(v && v.modus === "waarde" && d.fase !== "open" && d.waarde > 1 && bezetN > goedN), wl = (n) => `${n} ${n === 1 ? "fiche" : "fiches"}`;
-  const kijk = !!v && !["sukkel", "inzet"].includes(v.soort), wacht = kijk ? d.inzendingen.filter((i) => i.status === "open" && i.antwoord !== null) : [], nakijken = wacht.length, isPot = !!v && v.modus === "pot", laatste = v && (!volgende || volgende.ronde !== v.ronde);
+  const kijk = !!v && !["sukkel", "inzet"].includes(v.soort), wacht = kijk ? d.inzendingen.filter((i) => i.status === "open" && i.antwoord !== null) : [], nakijken = wacht.length, isPot = !!v && v.modus === "pot", laatste = v && (!volgende || volgende.ronde !== v.ronde), drinkers = d.inzendingen.filter((i) => i.shot === "ja").map((i) => i.team);
   const faseNaam = { wacht: "Wachten", open: "OPEN", dicht: "Dicht", stand: "Stand op telefoons" }[d.fase];
   let h = kop(`<div class="fiches">${faseNaam}</div>`) + `<div class="kolommen"><div>`;
   if (meer) h += `<div class="kaart"><div class="rij">${rondes.map((r) => `<button class="klein ${r === ronde ? "" : "stil"}" data-r="${esc(r)}">${esc(r.replace("Ronde ", "R"))}</button>`).join("")}</div>
@@ -410,6 +414,7 @@ function tekenBank() {
         ${d.fase === "open" ? `<button class="rood groot-knop" data-fase="dicht">Stop de vraag</button>` : nakijken ? (isPot ? `<button class="groot-knop" data-pot="1">Reken de pot uit</button>` : `<button class="groot-knop" disabled>Eerst nakijken (${nakijken})</button>`) : stapKan ? `<button class="groot-knop" data-w="${d.waarde - 1}">Foto ${5 - d.waarde} (${wl(d.waarde - 1)}) ▶</button>` : volgende ? `<button class="groot-knop" data-open="${volgende.id}">Volgende vraag ▶</button>` : `<button class="groot-knop" data-fase="stand">Einde: toon de stand op de telefoons</button>`}
       </div>
       ${stapKan && volgende ? `<div class="rij" style="margin-top:8px"><button class="stil" data-open="${volgende.id}">Volgende persoon ▶▶ (foto overslaan)</button></div>` : ""}
+      ${d.fase !== "open" && !nakijken && drinkers.length ? `<div class="drink">🥃 Shotje voor: <b>${drinkers.map((x) => esc(x)).join(", ")}</b></div>` : ""}
       ${v.modus === "waarde" ? `<p class="sub"><small>Op de dia: foto ${4 - d.waarde} · goed = ${wl(d.waarde)}</small></p>` : ""}
       ${nakijken && !isPot ? `<div class="nakijk"><div class="rij" style="justify-content:space-between;align-items:center"><div class="label" style="margin:0">Nakijken · goed is: ${esc(v.antwoord)}</div>${nakijken > 1 ? `<button class="stil klein" data-rest="${wacht.map((i) => i.id).join(",")}">Rest fout (${nakijken})</button>` : ""}</div>${wacht.map((i) => `<div class="nk"><div><small>${esc(i.team)}</small><div class="nk-a">${esc(i.antwoord)}</div></div><div class="rij"><button class="groen" data-keur="${i.id}" data-g="1">Goed</button><button class="rood" data-keur="${i.id}" data-g="0">Fout</button></div></div>`).join("")}</div>` : ""}
       ${nakijken && isPot ? `<p class="sub"><small>Dichtstbij pakt de pot, iedereen legt 1 in.</small></p>` : ""}
@@ -420,17 +425,18 @@ function tekenBank() {
     if ((v.ronde === "Ronde 1" || v.ronde === "Ronde 3") && (meer || (laatste && d.fase !== "open"))) h += `<div class="rij" style="margin-top:10px"><button class="groen klein" id="rondegok">Einde ronde: reken de rondegok af</button><small>${v.ronde === "Ronde 1" ? "Minstens 6 goed = inzet verdubbeld." : "Wie op het slechtste duo wedde, wint."}</small></div>`;
     h += `<table style="margin-top:12px"><tr><th>Team</th><th>Antwoord</th><th>Tijd</th><th>Inzet</th><th></th><th></th></tr>
       ${d.inzendingen.length ? d.inzendingen.map((i) => `<tr><td><b>${esc(i.team)}</b></td><td>${i.antwoord === null ? "<small>alleen inzet</small>" : esc(i.antwoord)}</td><td>${i.ms == null ? "" : (i.ms / 1000).toFixed(1) + " s"}</td>
-        <td>${v.modus === "waarde" ? i.waarde : i.inzet || ""}</td><td><span class="tag ${i.status}">${i.status === "inzet" ? "inzet" : i.status}${i.status === "goed" || i.status === "fout" ? " " + (i.delta > 0 ? "+" : "") + i.delta : ""}</span></td>
+        <td>${v.modus === "waarde" ? i.waarde : i.inzet || ""}</td><td><span class="tag ${i.status}">${i.status === "inzet" ? "inzet" : i.status}${i.status === "goed" || i.status === "fout" ? " " + (i.delta > 0 ? "+" : "") + i.delta : ""}</span>${i.shot === "ja" ? " 🥃" : ""}</td>
         <td class="rij">${i.antwoord === null || v.soort === "sukkel" || (v.soort === "mc" && !meer) || wacht.includes(i) ? "" : `<button class="klein groen" data-keur="${i.id}" data-g="1">Goed</button><button class="klein rood" data-keur="${i.id}" data-g="0">Fout</button>`}</td></tr>`).join("") : `<tr><td colspan="6"><small>Nog geen antwoorden.</small></td></tr>`}</table></div>`;
   } else h += `<div class="kaart"><h2>Nog geen vraag open</h2><p class="sub">Wacht tot alle duo's zijn ingelogd. Daarna start je de quiz.</p><div class="rij" style="margin-top:14px"><button class="groot-knop" data-open="${V[0].id}">Start de quiz ▶</button></div></div>`;
   if (hfout) h += `<div class="kaart fouttekst">${esc(hfout)}</div>`;
   h += `</div><div><div class="kaart"><h2>Stand</h2><table><tr><th>Team</th><th>Fiches</th><th>Weg</th><th>Boeken</th></tr>
-    ${[...d.teams].sort((a, b) => b.fiches - a.fiches).map((t) => `<tr><td>${t.bezet ? "<b>" + esc(t.naam) + "</b>" : "<small>Duo " + t.id + " (vrij)</small>"}${t.stapel ? `<br><small>stapel ${t.stapel}</small>` : ""}${t.shots ? `<br><small>🥃 ${t.shots}× bijgekocht</small>` : ""}</td><td><b>${t.fiches}</b></td><td>${t.weg ? `<span class="tag fout">${t.weg}×</span>` : ""}</td>
+    ${[...d.teams].sort((a, b) => b.fiches - a.fiches).map((t) => `<tr><td>${t.bezet ? "<b>" + esc(t.naam) + "</b>" : "<small>Duo " + t.id + " (vrij)</small>"}${t.stapel ? `<br><small>stapel ${t.stapel}</small>` : ""}${t.shots ? `<br><small>🥃 ${t.shots}× bijgekocht</small>` : ""}${t.drank ? `<br><small>🥃 ${t.drank}× fout</small>` : ""}</td><td><b>${t.fiches}</b></td><td>${t.weg ? `<span class="tag fout">${t.weg}×</span>` : ""}</td>
       <td><div class="rij"><button class="klein rood" data-pm="${t.id}" data-d="-1">−1</button><button class="klein groen" data-pm="${t.id}" data-d="1">+1</button>${!meer ? "" : `<input type="number" id="b${t.id}" value="${esc(boek[t.id] ?? "")}" placeholder="±" style="width:70px;padding:8px;font-size:15px"><button class="klein" data-boek="${t.id}">Boek</button><button class="klein rood" data-straf="${t.id}" title="Betrapt op googelen: 3 fiches eraf">−3</button>${t.bezet ? `<button class="klein stil" data-vrij="${t.id}" title="Plek vrijgeven">↺</button>` : ""}`}</div></td></tr>`).join("")}</table>
     ${meer ? `<p class="sub"><small>Boek: zelf een aantal erbij of eraf. −3: betrapt op googelen. ↺ geeft de plek van een duo vrij (twee keer tikken).</small></p>` : ""}</div>
     <div class="kaart"><h2>Meldingen</h2>${d.meldingen.length ? d.meldingen.map((m) => `<div class="melding ${m.soort === "weg" && m.fase === "open" ? "weg" : ""}">${esc(m.op)} · <b>${esc(m.team)}</b> ${m.soort === "weg" ? "verliet de pagina" : m.soort === "shot" ? "kocht 3 fiches: shotje! 🥃" : "is terug"}${m.vraag ? " (" + esc(m.vraag) + ", " + esc(m.fase) + ")" : ""}</div>`).join("") : "<small>Nog niets.</small>"}</div>
     <div class="rij" style="margin-bottom:12px"><button class="stil klein" id="meer">${meer ? "Minder opties ▴" : "Meer opties ▾"}</button></div>
     ${!meer ? "" : `<div class="rij" style="margin-bottom:12px"><button class="stil klein" id="autotoggle">Automatisch sluiten: ${autoDicht ? "aan" : "uit"}</button></div>`}
+    ${!meer ? "" : `<div class="kaart"><h2>Shotjes</h2><p class="sub"><small>Fout antwoord = 1 shotje. Maximaal per ronde per duo:</small></p><div class="rij" style="margin-top:8px">${[[0, "Uit"], [1, "1"], [2, "2"], [3, "3"], [99, "∞"]].map(([n, l]) => `<button class="klein ${d.shot_max === n ? "" : "stil"}" data-sm="${n}">${l}</button>`).join("")}</div></div>`}
     ${!meer ? "" : `<div class="kaart"><h2>Alles wissen</h2><p class="sub"><small>Wist alle antwoorden, teams en de stand. Typ RESET en tik op de knop.</small></p><div class="rij" style="margin-top:8px"><input type="text" id="reset" value="${esc(resetTekst)}" style="width:140px;padding:8px;font-size:15px"><button class="klein rood" id="doereset">Wis alles</button></div></div>`}
   </div></div>`;
   app.innerHTML = h;
@@ -446,6 +452,7 @@ function tekenBank() {
   const pot = document.getElementById("pot"); if (pot) pot.onclick = () => actie("quiz_host_pot", {});
   app.querySelectorAll("[data-rest]").forEach((b) => b.onclick = async () => { const ids = b.dataset.rest.split(",").map(Number); for (const i of H.inzendingen.filter((x) => ids.includes(x.id) && x.status === "open" && x.antwoord !== null)) { try { await rpc("quiz_host_keur", { p_pin: pin, p_id: i.id, p_goed: false }); } catch {} } hsig = ""; await pollBank(); });
   app.querySelectorAll("[data-pot]").forEach((b) => b.onclick = () => actie("quiz_host_pot", {}));
+  app.querySelectorAll("[data-sm]").forEach((b) => b.onclick = () => actie("quiz_host_shotmax", { p_max: +b.dataset.sm }));
   const at = document.getElementById("autotoggle"); if (at) at.onclick = () => { autoDicht = !autoDicht; ls.set("bq_auto", autoDicht ? "aan" : "uit"); tekenBank(); };
   const ba = document.getElementById("bankalles"); if (ba) ba.onclick = () => actie("quiz_host_bank_alles", {});
   const rg = document.getElementById("rondegok"); if (rg) rg.onclick = () => actie("quiz_host_rondegok", { p_ronde: v.ronde });
