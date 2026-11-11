@@ -290,7 +290,9 @@ function tekenTeam() {
   const actief = document.activeElement && document.activeElement.tagName === "INPUT" ? document.activeElement.id : null;
   const d = T, v = d.vraag, m = d.mijn;
   let h = kop(`<div class="fiches">${d.toon ?? d.fiches} fiches</div>`);
-  if (d.fiches <= 0) h += `<div class="kaart midden" style="border-color:var(--rood)"><div class="label">Blut</div><h1>Geen fiches meer</h1><p class="sub">Koop 3 fiches. Prijs: één shotje, nu meteen.</p><button class="breed rood" id="koop">Koop 3 fiches 🥃</button></div>`;
+  const uit = !d.blut_koop && !!(d.uit || (d.fase !== "open" && (d.toon ?? d.fiches) <= 0));
+  if (d.blut_koop) { if (d.fiches <= 0) h += `<div class="kaart midden" style="border-color:var(--rood)"><div class="label">Blut</div><h1>Geen fiches meer</h1><p class="sub">Koop 3 fiches. Prijs: één shotje, nu meteen.</p><button class="breed rood" id="koop">Koop 3 fiches 🥃</button></div>`; }
+  else if (uit) h += `<div class="kaart midden" style="border-color:var(--rood);padding:12px 14px"><div class="label">Blut · uit de strijd</div><p class="sub" style="margin:6px 0 0">Geen fiches meer, dus jullie kunnen niet meer winnen. Jullie spelen wel gewoon mee: een fout antwoord blijft 1 shotje.</p></div>`;
   if (d.fase === "stand" && d.stand) {
     h += `<div class="kaart"><div class="label">Tussenstand</div><h1>De stand</h1><div class="stand">${d.stand.map((r, i) => `<div class="${r.ik ? "ik" : ""}"><span>${i + 1}. ${esc(r.naam)}</span><b>${r.fiches}</b></div>`).join("")}</div></div>`;
   } else if (!v || d.fase === "wacht") {
@@ -303,13 +305,15 @@ function tekenTeam() {
     } else if (v.soort === "sukkel" && m && m.antwoord) {
       h += m.status === "goed" ? `<div class="groot goed">Goed gegokt!</div><p class="sub midden">+${m.delta} fiches</p>` : m.status === "fout" ? `<div class="groot fout">Mis</div><p class="sub midden">${m.delta} fiches</p>`
         : `<p class="sub">Jullie wedden ${m.inzet} op:</p><div class="groot">${esc(m.op_wie || "?")}</div><p class="sub midden">Na de ronde wordt afgerekend.</p>`;
+    } else if ((v.soort === "inzet" || v.soort === "sukkel") && uit && !m) {
+      h += `<p class="sub midden">Uit de strijd: bij deze vraag hoeven jullie niet te gokken.</p>`;
     } else if (v.soort === "sukkel" && d.fase === "open") {
       h += `<p class="sub">Kies een duo (niet jezelf) en je inzet. Goed gegokt is inzet verdubbeld, mis is inzet kwijt.</p>
         <div class="opties">${(d.anderen || []).map((t) => `<button class="optie ${gekozen === String(t.id) ? "gekozen" : ""}" data-o="${t.id}"><b>${t.id}</b>${esc(t.naam)}</button>`).join("")}</div>
         <div class="inzet">${range(v.inzet_min, v.inzet_max).map((n) => `<button data-i="${n}" class="${inzetKeuze === n ? "gekozen" : ""}">${n}</button>`).join("")}</div>
         <button class="breed" id="stuur" ${bezig ? "disabled" : ""}>Verstuur</button>${fout ? `<div class="fouttekst">${esc(fout)}</div>` : ""}`;
     } else if (d.fase === "open" && !(m && m.antwoord && !m.opnieuw)) {
-      const vooraf = v.inzet_vooraf, vast = !!m;
+      const vooraf = v.inzet_vooraf && !uit, vast = !!m;
       if (vooraf && !vast) {
         h += `<p class="sub">${v.allin ? "All-in: hoeveel fiches zet je in? Goed is verdubbeld, fout is kwijt." : v.soort === "inzet" ? "Gehaald is inzet verdubbeld, niet gehaald is inzet kwijt." : "Zet eerst in. Goed is inzet verdubbeld, fout is inzet kwijt."}</p>`;
         if (v.allin) h += `<input type="number" id="allin" inputmode="numeric" min="0" max="${v.inzet_max}" value="${inzetKeuze ?? ""}" placeholder="0 t/m ${v.inzet_max}" style="margin-top:12px">`;
@@ -317,13 +321,13 @@ function tekenTeam() {
         h += `<button class="breed" id="zetvast" ${bezig ? "disabled" : ""}>Inzet vastzetten</button>`;
       } else {
         if (vooraf) h += `<p class="sub">Inzet staat vast: <b>${m.inzet}</b> ${m.inzet === 1 ? "fiche" : "fiches"}.</p>`;
-        if (v.modus === "waarde") h += `<p class="sub">Nu goed = <b>${d.waarde}</b> ${d.waarde === 1 ? "fiche" : "fiches"}. Eén poging per foto.</p>`;
-        if (v.modus === "race") h += `<p class="sub">De race: eerste goede 3 fiches, tweede 2, daarna 1. Eén poging.</p>`;
-        if (v.modus === "pot") h += `<p class="sub">De pot: je legt 1 fiche in. Wie het dichtst zit, pakt de pot.</p>`;
-        if (v.modus === "bank" && d.bank) h += `<p class="sub">Je stapel: <b>${d.bank.stapel}</b>. Goed levert nu ${d.bank.reeks + 1} op, fout en je stapel is weg.</p>`;
+        if (v.modus === "waarde") h += `<p class="sub">${uit ? "" : `Nu goed = <b>${d.waarde}</b> ${d.waarde === 1 ? "fiche" : "fiches"}. `}Eén poging per foto.</p>`;
+        if (v.modus === "race" && !uit) h += `<p class="sub">De race: eerste goede 3 fiches, tweede 2, daarna 1. Eén poging.</p>`;
+        if (v.modus === "pot" && !uit) h += `<p class="sub">De pot: je legt 1 fiche in. Wie het dichtst zit, pakt de pot.</p>`;
+        if (v.modus === "bank" && d.bank && !uit) h += `<p class="sub">Je stapel: <b>${d.bank.stapel}</b>. Goed levert nu ${d.bank.reeks + 1} op, fout en je stapel is weg.</p>`;
         if (v.soort === "mc") h += `<div class="opties">${v.opties.map(([l, t]) => `<button class="optie ${gekozen === l ? "gekozen" : ""}" data-o="${l}"><b>${l}</b>${esc(t)}</button>`).join("")}</div>`;
         else h += `<input type="${v.soort === "getal" ? "number" : "text"}" id="antw" ${v.soort === "getal" ? 'inputmode="decimal"' : ""} placeholder="Jullie antwoord" value="${esc(tekst)}" autocomplete="off" style="margin-top:12px">`;
-        if (!vooraf && v.inzet_max > 0) h += `<p class="sub">Dubbel of niks?</p><div class="inzet"><button data-i="0" class="${!inzetKeuze ? "gekozen" : ""}">Gewoon</button><button data-i="1" class="${inzetKeuze === 1 ? "gekozen" : ""}">Dubbel ✗</button></div>`;
+        if (!vooraf && !uit && v.inzet_max > 0) h += `<p class="sub">Dubbel of niks?</p><div class="inzet"><button data-i="0" class="${!inzetKeuze ? "gekozen" : ""}">Gewoon</button><button data-i="1" class="${inzetKeuze === 1 ? "gekozen" : ""}">Dubbel ✗</button></div>`;
         h += `<button class="breed" id="stuur" ${bezig ? "disabled" : ""}>Verstuur</button>`;
       }
       if (fout) h += `<div class="fouttekst">${esc(fout)}</div>`;
@@ -334,11 +338,11 @@ function tekenTeam() {
       else {
         const st = m.status === "goed" ? ["goed", "Goed!"] : m.status === "fout" ? ["fout", "Fout"] : ["wacht", "De bank kijkt na…"];
         h += `<p class="sub">Jullie antwoord: <b>${esc(m.antwoord)}</b></p><div class="groot ${st[0]}">${st[1]}</div>`;
-        if (m.status !== "open" && v.modus !== "bank") h += `<p class="sub midden">${m.delta > 0 ? "+" : ""}${m.delta} ${Math.abs(m.delta) === 1 ? "fiche" : "fiches"}</p>`;
+        if (m.status !== "open" && v.modus !== "bank" && !uit) h += `<p class="sub midden">${m.delta > 0 ? "+" : ""}${m.delta} ${Math.abs(m.delta) === 1 ? "fiche" : "fiches"}</p>`;
       }
       if (m && m.shot === "ja") h += `<div class="shotje">🥃 1 shotje!</div>`;
       else if (m && m.shot === "vol" && d.shots) h += `<p class="sub midden">Geen shotje: je max van ${d.shots.max} deze ronde is op.</p>`;
-      if (v.modus === "bank" && d.bank) {
+      if (v.modus === "bank" && d.bank && !uit) {
         h += `<p class="sub midden">Stapel: <b>${d.bank.stapel}</b></p>`;
         if (d.bank.gedaan) h += `<p class="sub midden goed">Gebankt. Je begint weer bij 1.</p>`;
         else if (d.bank.kan) h += `<button class="breed groen" id="bank">Bank! (${d.bank.stapel} veiligstellen)</button>`;
@@ -430,13 +434,15 @@ function tekenBank() {
   } else h += `<div class="kaart"><h2>Nog geen vraag open</h2><p class="sub">Wacht tot alle duo's zijn ingelogd. Daarna start je de quiz.</p><div class="rij" style="margin-top:14px"><button class="groot-knop" data-open="${V[0].id}">Start de quiz ▶</button></div></div>`;
   if (hfout) h += `<div class="kaart fouttekst">${esc(hfout)}</div>`;
   h += `</div><div><div class="kaart"><h2>Stand</h2><table><tr><th>Team</th><th>Fiches</th><th>Weg</th><th>Boeken</th></tr>
-    ${[...d.teams].sort((a, b) => b.fiches - a.fiches).map((t) => `<tr><td>${t.bezet ? "<b>" + esc(t.naam) + "</b>" : "<small>Duo " + t.id + " (vrij)</small>"}${t.stapel ? `<br><small>stapel ${t.stapel}</small>` : ""}${t.shots ? `<br><small>🥃 ${t.shots}× bijgekocht</small>` : ""}${t.drank ? `<br><small>🥃 ${t.drank}× fout</small>` : ""}</td><td><b>${t.fiches}</b></td><td>${t.weg ? `<span class="tag fout">${t.weg}×</span>` : ""}</td>
+    ${[...d.teams].sort((a, b) => b.fiches - a.fiches).map((t) => `<tr><td>${t.bezet ? "<b>" + esc(t.naam) + "</b>" : "<small>Duo " + t.id + " (vrij)</small>"}${t.stapel ? `<br><small>stapel ${t.stapel}</small>` : ""}${t.shots ? `<br><small>🥃 ${t.shots}× bijgekocht</small>` : ""}${t.drank ? `<br><small>🥃 ${t.drank}× fout</small>` : ""}${!d.blut_koop && t.bezet && (t.uit || t.fiches <= 0) ? `<br><small><b>UIT</b>, speelt mee voor de shotjes</small>` : ""}</td><td><b>${t.fiches}</b></td><td>${t.weg ? `<span class="tag fout">${t.weg}×</span>` : ""}</td>
       <td><div class="rij"><button class="klein rood" data-pm="${t.id}" data-d="-1">−1</button><button class="klein groen" data-pm="${t.id}" data-d="1">+1</button>${!meer ? "" : `<input type="number" id="b${t.id}" value="${esc(boek[t.id] ?? "")}" placeholder="±" style="width:70px;padding:8px;font-size:15px"><button class="klein" data-boek="${t.id}">Boek</button><button class="klein rood" data-straf="${t.id}" title="Betrapt op googelen: 3 fiches eraf">−3</button>${t.bezet ? `<button class="klein stil" data-vrij="${t.id}" title="Plek vrijgeven">↺</button>` : ""}`}</div></td></tr>`).join("")}</table>
+    ${!d.blut_koop && d.teams.some((t) => t.bezet && (t.uit || t.fiches <= 0)) ? `<p class="sub"><small>UIT: geen fiches meer, kan niet meer winnen. Fiches erbij geven (+1) zet een duo weer in het spel.</small></p>` : ""}
     ${meer ? `<p class="sub"><small>Boek: zelf een aantal erbij of eraf. −3: betrapt op googelen. ↺ geeft de plek van een duo vrij (twee keer tikken).</small></p>` : ""}</div>
-    <div class="kaart"><h2>Meldingen</h2>${d.meldingen.length ? d.meldingen.map((m) => `<div class="melding ${m.soort === "weg" && m.fase === "open" ? "weg" : ""}">${esc(m.op)} · <b>${esc(m.team)}</b> ${m.soort === "weg" ? "verliet de pagina" : m.soort === "shot" ? "kocht 3 fiches: shotje! 🥃" : "is terug"}${m.vraag ? " (" + esc(m.vraag) + ", " + esc(m.fase) + ")" : ""}</div>`).join("") : "<small>Nog niets.</small>"}</div>
+    <div class="kaart"><h2>Meldingen</h2>${d.meldingen.length ? d.meldingen.map((m) => `<div class="melding ${m.soort === "weg" && m.fase === "open" ? "weg" : ""}">${esc(m.op)} · <b>${esc(m.team)}</b> ${m.soort === "weg" ? "verliet de pagina" : m.soort === "shot" ? "kocht 3 fiches: shotje! 🥃" : m.soort === "uit" ? "is blut: uit de strijd" : "is terug"}${m.vraag ? " (" + esc(m.vraag) + ", " + esc(m.fase) + ")" : ""}</div>`).join("") : "<small>Nog niets.</small>"}</div>
     <div class="rij" style="margin-bottom:12px"><button class="stil klein" id="meer">${meer ? "Minder opties ▴" : "Meer opties ▾"}</button></div>
     ${!meer ? "" : `<div class="rij" style="margin-bottom:12px"><button class="stil klein" id="autotoggle">Automatisch sluiten: ${autoDicht ? "aan" : "uit"}</button></div>`}
     ${!meer ? "" : `<div class="kaart"><h2>Shotjes</h2><p class="sub"><small>Fout antwoord = 1 shotje. Maximaal per ronde per duo:</small></p><div class="rij" style="margin-top:8px">${[[0, "Uit"], [1, "1"], [2, "2"], [3, "3"], [99, "∞"]].map(([n, l]) => `<button class="klein ${d.shot_max === n ? "" : "stil"}" data-sm="${n}">${l}</button>`).join("")}</div></div>`}
+    ${!meer ? "" : `<div class="kaart"><h2>Geen fiches meer?</h2><p class="sub"><small>Uit de strijd: kan niet meer winnen, blijft meedrinken. Of bijkopen: 3 fiches voor een shotje.</small></p><div class="rij" style="margin-top:8px"><button class="klein ${d.blut_koop ? "stil" : ""}" data-bk="0">Uit de strijd</button><button class="klein ${d.blut_koop ? "" : "stil"}" data-bk="1">Bijkopen</button></div></div>`}
     ${!meer ? "" : `<div class="kaart"><h2>Alles wissen</h2><p class="sub"><small>Wist alle antwoorden, teams en de stand. Typ RESET en tik op de knop.</small></p><div class="rij" style="margin-top:8px"><input type="text" id="reset" value="${esc(resetTekst)}" style="width:140px;padding:8px;font-size:15px"><button class="klein rood" id="doereset">Wis alles</button></div></div>`}
   </div></div>`;
   app.innerHTML = h;
@@ -453,6 +459,7 @@ function tekenBank() {
   app.querySelectorAll("[data-rest]").forEach((b) => b.onclick = async () => { const ids = b.dataset.rest.split(",").map(Number); for (const i of H.inzendingen.filter((x) => ids.includes(x.id) && x.status === "open" && x.antwoord !== null)) { try { await rpc("quiz_host_keur", { p_pin: pin, p_id: i.id, p_goed: false }); } catch {} } hsig = ""; await pollBank(); });
   app.querySelectorAll("[data-pot]").forEach((b) => b.onclick = () => actie("quiz_host_pot", {}));
   app.querySelectorAll("[data-sm]").forEach((b) => b.onclick = () => actie("quiz_host_shotmax", { p_max: +b.dataset.sm }));
+  app.querySelectorAll("[data-bk]").forEach((b) => b.onclick = () => actie("quiz_host_blutkoop", { p_koop: b.dataset.bk === "1" }));
   const at = document.getElementById("autotoggle"); if (at) at.onclick = () => { autoDicht = !autoDicht; ls.set("bq_auto", autoDicht ? "aan" : "uit"); tekenBank(); };
   const ba = document.getElementById("bankalles"); if (ba) ba.onclick = () => actie("quiz_host_bank_alles", {});
   const rg = document.getElementById("rondegok"); if (rg) rg.onclick = () => actie("quiz_host_rondegok", { p_ronde: v.ronde });
