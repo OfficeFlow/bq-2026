@@ -53,6 +53,21 @@
   small { color: rgba(255,255,255,.6); }
   .munt { position: fixed; top: -60px; z-index: 50; pointer-events: none; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFF3B0, #E9B949 55%, #B8860B); border: 2px solid #8a6508; box-shadow: 0 2px 6px rgba(0,0,0,.4); animation: val linear forwards; }
   @keyframes val { 0% { transform: translateY(0) rotateY(0deg); opacity: 1; } 85% { opacity: 1; } 100% { transform: translateY(115vh) rotateY(1080deg); opacity: 0; } }
+  body.scherm main { max-width: none; padding: 3vh 4vw; }
+  .st-titel { font-family: Georgia, serif; color: var(--goud); font-size: 7vh; text-align: center; letter-spacing: .12em; margin: 2vh 0 1vh; }
+  .st-sub { text-align: center; color: rgba(255,255,255,.7); font-size: 2.6vh; min-height: 3.4vh; }
+  .st-rij { display: flex; justify-content: center; align-items: flex-end; gap: 3vw; height: 66vh; margin-top: 2vh; }
+  .st-kol { flex: 1; max-width: 17vw; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+  .st-stapel { display: flex; flex-direction: column-reverse; align-items: center; }
+  .st-munt { width: 9vw; border-radius: 50%; background: linear-gradient(#FFE89A, #E9B949 45%, #B8860B); border: 1px solid #7a5a06; box-sizing: border-box; animation: plof .25s ease-out; }
+  @keyframes plof { from { transform: translateY(-6vh); opacity: 0; } to { transform: none; opacity: 1; } }
+  .st-getal { font-family: Georgia, serif; font-size: 6vh; font-weight: 700; color: #fff; margin-bottom: 1vh; }
+  .st-naam { font-size: 3vh; font-weight: 700; color: var(--goud); margin-top: 1.5vh; text-align: center; min-height: 8vh; }
+  .st-lijst { max-width: 70vw; margin: 3vh auto 0; }
+  .st-plek { display: flex; align-items: center; gap: 3vw; background: rgba(255,255,255,.07); border: 1px solid rgba(233,185,73,.3); border-radius: 2vh; padding: 2vh 3vw; margin-bottom: 1.6vh; font-size: 4.6vh; font-weight: 700; visibility: hidden; }
+  .st-plek.zichtbaar { visibility: visible; animation: plof .5s ease-out; }
+  .st-plek.een { background: var(--goud); color: var(--blauw); font-size: 6vh; }
+  .st-plek span.nr { font-family: Georgia, serif; width: 8vw; } .st-plek span.nm { flex: 1; } 
 </style>
 </head>
 <body>
@@ -60,7 +75,7 @@
 <script>
 // Casino Boedapest: teams antwoorden op hun telefoon, de bank keurt goed en ziet de stand.
 const API = "https://iqngwxepplobmkywfelk.supabase.co/rest/v1/rpc/", KEY = "sb_publishable_8qpSG7CXda-gKiqxxHY3tw_zDBsLyX1";
-const BANK = location.search.includes("bank");
+const STAND = location.search.includes("stand"), BANK = STAND || location.search.includes("bank");
 if (BANK) document.body.classList.add("bank");
 const app = document.getElementById("app");
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -73,6 +88,41 @@ async function rpc(fn, args) {
   return j;
 }
 const kop = (rechts) => `<header><div class="merk">CASINO BOEDAPEST</div>${rechts || ""}</header>`;
+
+/* ================= STAND OP HET GROTE SCHERM ================= */
+function standStart() {
+  document.body.classList.add("scherm");
+  let stap = 0, teams = [], bezigS = false;
+  const wacht = (ms) => new Promise((r) => setTimeout(r, ms));
+  const begin = () => { stap = 0; app.innerHTML = `<div class="st-titel" style="margin-top:30vh">TUSSENSTAND</div><div class="st-sub">Spatie of klik om te beginnen</div>`; };
+  async function stapels() {
+    const d = await rpc("quiz_host", { p_pin: pin });
+    teams = d.teams.filter((t) => t.bezet).map((t) => ({ naam: t.naam, n: Math.max(0, t.fiches) }));
+    const max = Math.max(1, ...teams.map((t) => t.n)), h = Math.min(2.2, 46 / max);
+    app.innerHTML = `<div class="st-titel">TUSSENSTAND</div><div class="st-sub" id="st-sub">Wie heeft de hoogste stapel?</div><div class="st-rij">${teams.map((t, i) => `<div class="st-kol"><div class="st-getal" id="g${i}">0</div><div class="st-stapel" id="s${i}"></div><div class="st-naam">${esc(t.naam)}</div></div>`).join("")}</div>`;
+    for (let k = 1; k <= max; k++) for (let i = 0; i < teams.length; i++) if (teams[i].n >= k) {
+      const m = document.createElement("div"); m.className = "st-munt"; m.style.height = h + "vh"; m.style.marginTop = -h * 0.35 + "vh";
+      document.getElementById("s" + i).appendChild(m); document.getElementById("g" + i).textContent = k;
+      await wacht(k > max - 3 ? 420 : 90);
+    }
+    document.getElementById("st-sub").textContent = "Spatie of klik voor de ranglijst";
+  }
+  async function ranglijst() {
+    const r = [...teams].sort((a, b) => b.n - a.n); r.forEach((t, i) => { t.plek = i && r[i - 1].n === t.n ? r[i - 1].plek : i + 1; });
+    app.innerHTML = `<div class="st-titel">DE STAND</div><div class="st-lijst">${r.map((t, i) => `<div class="st-plek ${t.plek === 1 ? "een" : ""}" id="p${i}"><span class="nr">${t.plek}</span><span class="nm">${esc(t.naam)}</span><span>${t.n} fiches</span></div>`).join("")}</div>`;
+    for (let i = r.length - 1; i >= 0; i--) { await wacht(i === 0 ? 1800 : 1100); document.getElementById("p" + i).classList.add("zichtbaar"); }
+    munten(8);
+  }
+  async function verder() {
+    if (bezigS) return; bezigS = true;
+    try { if (stap === 0) { stap = 1; await stapels(); } else if (stap === 1) { stap = 2; await ranglijst(); } else begin(); }
+    catch (e) { app.innerHTML = `<div class="st-titel" style="margin-top:30vh">Geen verbinding</div><div class="st-sub">${esc(e.message)}. Spatie om opnieuw te proberen.</div>`; stap = 0; }
+    bezigS = false;
+  }
+  document.addEventListener("keydown", (e) => { if (e.key === " " || e.key === "Enter" || e.key === "ArrowRight") { e.preventDefault(); verder(); } if (e.key === "f") document.documentElement.requestFullscreen?.(); });
+  document.addEventListener("click", verder);
+  begin();
+}
 
 /* ================= TEAM ================= */
 let token = ls.get("bq_token"), T = null, sig = "", gekozen = null, inzetKeuze = null, tekst = "", fout = "", bezig = false;
@@ -203,6 +253,7 @@ async function bankStart(melding) {
     return;
   }
   try { V = await rpc("quiz_host_vragen", { p_pin: pin }); } catch (e) { pin = null; return bankStart(e.message); }
+  if (STAND) return standStart();
   pollBank(); setInterval(pollBank, 1500); setInterval(async () => { try { V = await rpc("quiz_host_vragen", { p_pin: pin }); hsig = ""; } catch {} }, 8000);
 }
 async function pollBank() {
