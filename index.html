@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Casino Boedapest</title>
+<style>
+  :root { --goud:#E9B949; --rood:#C8102E; --nacht:#0B1426; --blauw:#14213D; --licht:#F6E3A8; --groen:#3E7B4F; --vlak:#16233f; }
+  * { box-sizing: border-box; margin: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { min-height: 100%; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, system-ui, sans-serif; color: #fff; background: var(--nacht);
+    background-image: radial-gradient(80vmax 60vmax at 100% 0%, rgba(255,0,128,.22), transparent 60%), radial-gradient(70vmax 60vmax at 0% 100%, rgba(233,185,73,.16), transparent 60%); background-attachment: fixed; }
+  main { max-width: 560px; margin: 0 auto; padding: 16px 16px 40px; }
+  body.bank main { max-width: 1100px; }
+  header { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 4px 0 14px; }
+  .merk { font-family: Georgia, "Times New Roman", serif; font-weight: 700; font-size: 20px; color: var(--goud); letter-spacing: .04em; }
+  .fiches { background: var(--goud); color: var(--blauw); font-weight: 800; border-radius: 999px; padding: 8px 14px; font-size: 17px; white-space: nowrap; }
+  .kaart { background: var(--vlak); border: 1px solid rgba(233,185,73,.25); border-radius: 18px; padding: 18px; margin-bottom: 14px; }
+  .label { color: var(--goud); font-weight: 700; letter-spacing: .18em; font-size: 12px; text-transform: uppercase; }
+  h1 { font-family: Georgia, serif; font-size: 24px; line-height: 1.2; margin: 6px 0 4px; }
+  h2 { font-family: Georgia, serif; font-size: 19px; margin: 0 0 10px; }
+  p.sub { color: var(--licht); font-size: 15px; margin-top: 6px; line-height: 1.4; }
+  input[type=text], input[type=number], select { width: 100%; font-size: 18px; padding: 14px; border-radius: 12px; border: 2px solid rgba(255,255,255,.2); background: #0e1930; color: #fff; outline: none; }
+  input:focus, select:focus { border-color: var(--goud); }
+  button { font: inherit; font-weight: 700; border: 0; border-radius: 12px; padding: 14px 16px; background: var(--goud); color: var(--blauw); cursor: pointer; }
+  button:disabled { opacity: .45; }
+  button.breed { width: 100%; font-size: 18px; margin-top: 12px; }
+  button.rood { background: var(--rood); color: #fff; } button.groen { background: var(--groen); color: #fff; }
+  button.stil { background: rgba(255,255,255,.1); color: #fff; } button.klein { padding: 8px 10px; font-size: 14px; border-radius: 9px; }
+  .opties { display: grid; gap: 10px; margin-top: 12px; }
+  .optie { display: flex; gap: 12px; align-items: center; text-align: left; background: #0e1930; color: #fff; border: 2px solid rgba(255,255,255,.2); font-weight: 600; }
+  .optie b { background: var(--goud); color: var(--blauw); border-radius: 50%; width: 34px; height: 34px; display: grid; place-items: center; flex: none; }
+  .optie.gekozen { border-color: var(--goud); background: rgba(233,185,73,.18); }
+  .rij { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .inzet { display: flex; gap: 8px; margin-top: 10px; } .inzet button { flex: 1; background: #0e1930; color: #fff; border: 2px solid rgba(255,255,255,.2); }
+  .inzet button.gekozen { background: var(--goud); color: var(--blauw); border-color: var(--goud); }
+  .groot { font-family: Georgia, serif; font-size: 44px; font-weight: 700; text-align: center; margin: 8px 0; }
+  .midden { text-align: center; }
+  .goed { color: #7CE39A; } .fout { color: #FF8C9B; } .wacht { color: var(--licht); }
+  .fouttekst { color: #FF8C9B; margin-top: 10px; font-weight: 600; }
+  .stand div { display: flex; justify-content: space-between; padding: 10px 12px; border-radius: 10px; margin-top: 6px; background: #0e1930; font-size: 17px; }
+  .stand div.ik { outline: 2px solid var(--goud); }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; } th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,.1); vertical-align: middle; }
+  th { color: var(--goud); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+  .tag { display: inline-block; border-radius: 6px; padding: 2px 8px; font-size: 12px; font-weight: 700; background: rgba(255,255,255,.12); }
+  .tag.goed { background: var(--groen); color: #fff; } .tag.fout { background: var(--rood); color: #fff; } .tag.open { background: var(--goud); color: var(--blauw); }
+  .kolommen { display: grid; gap: 14px; } @media (min-width: 900px) { .kolommen { grid-template-columns: 1.5fr 1fr; align-items: start; } }
+  .vragen { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; } .vragen button { min-width: 44px; }
+  .vragen button.nu { outline: 3px solid #fff; } .vragen button.klaar { background: var(--groen); color: #fff; }
+  .sleutel { background: rgba(62,123,79,.25); border: 1px solid var(--groen); border-radius: 10px; padding: 10px 12px; margin-top: 10px; font-size: 16px; }
+  .melding { font-size: 14px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.08); } .melding.weg { color: #FF8C9B; font-weight: 600; }
+  small { color: rgba(255,255,255,.6); }
+</style>
+</head>
+<body>
+<main id="app"><div class="kaart midden"><p class="sub">Laden…</p></div></main>
+<script>
+// Casino Boedapest: teams antwoorden op hun telefoon, de bank keurt goed en ziet de stand.
+const API = "https://iqngwxepplobmkywfelk.supabase.co/rest/v1/rpc/", KEY = "sb_publishable_8qpSG7CXda-gKiqxxHY3tw_zDBsLyX1";
+const BANK = location.search.includes("bank");
+if (BANK) document.body.classList.add("bank");
+const app = document.getElementById("app");
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const ls = { get: (k) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} }, del: (k) => { try { localStorage.removeItem(k); } catch {} } };
+
+async function rpc(fn, args) {
+  const r = await fetch(API + fn, { method: "POST", headers: { "Content-Type": "application/json", apikey: KEY, Authorization: "Bearer " + KEY }, body: JSON.stringify(args || {}) });
+  const j = await r.json().catch(() => null);
+  if (!r.ok) throw new Error((j && j.message) || "Geen verbinding");
+  return j;
+}
+const kop = (rechts) => `<header><div class="merk">CASINO BOEDAPEST</div>${rechts || ""}</header>`;
+
+/* ================= TEAM ================= */
+let token = ls.get("bq_token"), T = null, sig = "", gekozen = null, inzetKeuze = null, tekst = "", fout = "", bezig = false;
+
+async function teamStart() {
+  if (!token) return kiesTeam();
+  document.addEventListener("visibilitychange", () => { if (token) rpc("quiz_weg", { p_token: token, p_soort: document.hidden ? "weg" : "terug" }).catch(() => {}); });
+  pollTeam(); setInterval(pollTeam, 1500);
+}
+async function kiesTeam(melding) {
+  let teams = [];
+  try { teams = await rpc("quiz_teams_lijst"); } catch (e) { melding = e.message; }
+  app.innerHTML = kop() + `<div class="kaart"><div class="label">Welkom</div><h1>Kies je duo</h1><p class="sub">Eén telefoon per duo. Vul jullie teamnaam in en tik op een vrije plek.</p>
+    <input type="text" id="naam" maxlength="24" placeholder="Teamnaam" style="margin-top:14px" autocomplete="off">
+    <div class="opties">${teams.map((t) => `<button class="optie" data-t="${t.id}" ${t.bezet ? "disabled" : ""}><b>${t.id}</b>${t.bezet ? esc(t.naam) + " (bezet)" : "Duo " + t.id + " · vrij"}</button>`).join("")}</div>
+    ${melding ? `<div class="fouttekst">${esc(melding)}</div>` : ""}</div>`;
+  app.querySelectorAll("[data-t]").forEach((b) => b.onclick = async () => {
+    const naam = document.getElementById("naam").value.trim();
+    if (naam.length < 2) return kiesTeam("Vul eerst een teamnaam in.");
+    try { const r = await rpc("quiz_claim", { p_team: +b.dataset.t, p_naam: naam }); if (r.fout) return kiesTeam(r.fout); token = r.token; ls.set("bq_token", token); teamStart(); }
+    catch (e) { kiesTeam(e.message); }
+  });
+}
+async function pollTeam() {
+  try {
+    const d = await rpc("quiz_poll", { p_token: token });
+    if (d.fout) { ls.del("bq_token"); token = null; return kiesTeam("Je plek is vrijgegeven. Kies opnieuw."); }
+    const s = JSON.stringify(d);
+    const andereVraag = !T || (T.vraag && T.vraag.id) !== (d.vraag && d.vraag.id);
+    if (andereVraag) { gekozen = null; inzetKeuze = null; tekst = ""; fout = ""; }
+    T = d; if (s !== sig) { sig = s; tekenTeam(); }
+  } catch (e) { /* even geen verbinding: volgende poging */ }
+}
+function tekenTeam() {
+  const actief = document.activeElement && document.activeElement.tagName === "INPUT" ? document.activeElement.id : null;
+  const d = T, v = d.vraag, m = d.mijn;
+  let h = kop(`<div class="fiches">${d.fiches} fiches</div>`);
+  if (d.fiches <= 0) h += `<div class="kaart midden" style="border-color:var(--rood)"><div class="label">Blut</div><h1>Geen fiches meer</h1><p class="sub">Koop 3 fiches. Prijs: één shotje, nu meteen.</p><button class="breed rood" id="koop">Koop 3 fiches 🥃</button></div>`;
+  if (d.fase === "stand" && d.stand) {
+    h += `<div class="kaart"><div class="label">Tussenstand</div><h1>De stand</h1><div class="stand">${d.stand.map((r, i) => `<div class="${r.ik ? "ik" : ""}"><span>${i + 1}. ${esc(r.naam)}</span><b>${r.fiches}</b></div>`).join("")}</div></div>`;
+  } else if (!v || d.fase === "wacht") {
+    h += `<div class="kaart midden"><div class="label">${esc(d.team)}</div><h1>Even wachten</h1><p class="sub">De bank zet zo de volgende vraag open. Blijf op deze pagina.</p></div>`;
+  } else {
+    h += `<div class="kaart"><div class="label">${esc(v.ronde)} · vraag ${esc(v.nr)}</div><h1>${esc(v.tekst)}</h1>`;
+    if (v.soort === "inzet" && m) {
+      h += m.status === "goed" ? `<div class="groot goed">Gehaald!</div><p class="sub midden">+${m.delta} fiches</p>` : m.status === "fout" ? `<div class="groot fout">Niet gehaald</div><p class="sub midden">${m.delta} fiches</p>`
+        : `<p class="sub">Inzet staat vast:</p><div class="groot">${m.inzet}</div><p class="sub midden">Na de ronde wordt afgerekend.</p>`;
+    } else if (v.soort === "sukkel" && m && m.antwoord) {
+      h += m.status === "goed" ? `<div class="groot goed">Goed gegokt!</div><p class="sub midden">+${m.delta} fiches</p>` : m.status === "fout" ? `<div class="groot fout">Mis</div><p class="sub midden">${m.delta} fiches</p>`
+        : `<p class="sub">Jullie wedden ${m.inzet} op:</p><div class="groot">${esc(m.op_wie || "?")}</div><p class="sub midden">Na de ronde wordt afgerekend.</p>`;
+    } else if (v.soort === "sukkel" && d.fase === "open") {
+      h += `<p class="sub">Kies een duo (niet jezelf) en je inzet. Goed gegokt is inzet verdubbeld, mis is inzet kwijt.</p>
+        <div class="opties">${(d.anderen || []).map((t) => `<button class="optie ${gekozen === String(t.id) ? "gekozen" : ""}" data-o="${t.id}"><b>${t.id}</b>${esc(t.naam)}</button>`).join("")}</div>
+        <div class="inzet">${range(v.inzet_min, v.inzet_max).map((n) => `<button data-i="${n}" class="${inzetKeuze === n ? "gekozen" : ""}">${n}</button>`).join("")}</div>
+        <button class="breed" id="stuur" ${bezig ? "disabled" : ""}>Verstuur</button>${fout ? `<div class="fouttekst">${esc(fout)}</div>` : ""}`;
+    } else if (d.fase === "open" && !(m && m.antwoord)) {
+      const vooraf = v.inzet_vooraf, vast = !!m;
+      if (vooraf && !vast) {
+        h += `<p class="sub">${v.allin ? "All-in: hoeveel fiches zet je in? Goed is verdubbeld, fout is kwijt." : v.soort === "inzet" ? "Gehaald is inzet verdubbeld, niet gehaald is inzet kwijt." : "Zet eerst in. Goed is inzet verdubbeld, fout is inzet kwijt."}</p>`;
+        if (v.allin) h += `<input type="number" id="allin" inputmode="numeric" min="0" max="${v.inzet_max}" value="${inzetKeuze ?? ""}" placeholder="0 t/m ${v.inzet_max}" style="margin-top:12px">`;
+        else h += `<div class="inzet">${range(v.inzet_min, v.inzet_max).map((n) => `<button data-i="${n}" class="${inzetKeuze === n ? "gekozen" : ""}">${n}</button>`).join("")}</div>`;
+        h += `<button class="breed" id="zetvast" ${bezig ? "disabled" : ""}>Inzet vastzetten</button>`;
+      } else {
+        if (vooraf) h += `<p class="sub">Inzet staat vast: <b>${m.inzet}</b> ${m.inzet === 1 ? "fiche" : "fiches"}.</p>`;
+        if (v.modus === "waarde") h += `<p class="sub">Nu goed = <b>${d.waarde}</b> ${d.waarde === 1 ? "fiche" : "fiches"}. Eén poging per foto.</p>`;
+        if (v.modus === "race") h += `<p class="sub">De race: eerste goede 3 fiches, tweede 2, daarna 1. Eén poging.</p>`;
+        if (v.modus === "pot") h += `<p class="sub">De pot: je legt 1 fiche in. Wie het dichtst zit, pakt de pot.</p>`;
+        if (v.modus === "bank" && d.bank) h += `<p class="sub">Je stapel: <b>${d.bank.stapel}</b>. Goed levert nu ${d.bank.reeks + 1} op, fout en je stapel is weg.</p>`;
+        if (v.soort === "mc") h += `<div class="opties">${v.opties.map(([l, t]) => `<button class="optie ${gekozen === l ? "gekozen" : ""}" data-o="${l}"><b>${l}</b>${esc(t)}</button>`).join("")}</div>`;
+        else h += `<input type="${v.soort === "getal" ? "number" : "text"}" id="antw" ${v.soort === "getal" ? 'inputmode="decimal"' : ""} placeholder="Jullie antwoord" value="${esc(tekst)}" autocomplete="off" style="margin-top:12px">`;
+        if (!vooraf && v.inzet_max > 0) h += `<p class="sub">Dubbel of niks?</p><div class="inzet"><button data-i="0" class="${!inzetKeuze ? "gekozen" : ""}">Gewoon</button><button data-i="1" class="${inzetKeuze === 1 ? "gekozen" : ""}">Dubbel ✗</button></div>`;
+        h += `<button class="breed" id="stuur" ${bezig ? "disabled" : ""}>Verstuur</button>`;
+      }
+      if (fout) h += `<div class="fouttekst">${esc(fout)}</div>`;
+    } else if (d.fase === "open") {
+      h += `<p class="sub">Verstuurd:</p><div class="groot">${esc(m.antwoord)}</div><p class="sub midden">Wacht op de bank.</p>`;
+    } else {
+      if (!m || !m.antwoord) h += `<div class="groot fout">Niets ingestuurd</div>${m && m.delta ? `<p class="sub midden">${m.delta} fiches</p>` : ""}`;
+      else {
+        const st = m.status === "goed" ? ["goed", "Goed!"] : m.status === "fout" ? ["fout", "Fout"] : ["wacht", "De bank kijkt na…"];
+        h += `<p class="sub">Jullie antwoord: <b>${esc(m.antwoord)}</b></p><div class="groot ${st[0]}">${st[1]}</div>`;
+        if (m.status !== "open" && v.modus !== "bank") h += `<p class="sub midden">${m.delta > 0 ? "+" : ""}${m.delta} ${Math.abs(m.delta) === 1 ? "fiche" : "fiches"}</p>`;
+      }
+      if (v.modus === "bank" && d.bank) {
+        h += `<p class="sub midden">Stapel: <b>${d.bank.stapel}</b></p>`;
+        if (d.bank.gedaan) h += `<p class="sub midden goed">Gebankt. Je begint weer bij 1.</p>`;
+        else if (d.bank.kan) h += `<button class="breed groen" id="bank">Bank! (${d.bank.stapel} veiligstellen)</button>`;
+      }
+    }
+    h += `</div>`;
+  }
+  h += `<p class="midden"><small>${esc(d.team)} · verlaat deze pagina niet tijdens een vraag</small></p>`;
+  app.innerHTML = h;
+  const a = document.getElementById("antw"); if (a) a.oninput = () => { tekst = a.value; };
+  const al = document.getElementById("allin"); if (al) al.oninput = () => { inzetKeuze = al.value === "" ? null : +al.value; };
+  app.querySelectorAll("[data-o]").forEach((b) => b.onclick = () => { gekozen = b.dataset.o; tekenTeam(); });
+  app.querySelectorAll("[data-i]").forEach((b) => b.onclick = () => { inzetKeuze = +b.dataset.i; tekenTeam(); });
+  const doe = async (fn, args) => { bezig = true; fout = ""; tekenTeam(); try { const r = await rpc(fn, args); if (r.fout) fout = r.fout; } catch (e) { fout = e.message; } bezig = false; sig = ""; await pollTeam(); tekenTeam(); };
+  const zv = document.getElementById("zetvast");
+  if (zv) zv.onclick = () => { if (inzetKeuze === null || isNaN(inzetKeuze)) { fout = "Kies eerst je inzet."; return tekenTeam(); } doe("quiz_inzet", { p_token: token, p_vraag: v.id, p_inzet: inzetKeuze }); };
+  const st = document.getElementById("stuur");
+  if (st) st.onclick = () => { const antw = v.soort === "mc" || v.soort === "sukkel" ? gekozen : tekst.trim(); if (!antw) { fout = v.soort === "sukkel" ? "Kies eerst een duo." : "Vul eerst een antwoord in."; return tekenTeam(); }
+    if (v.soort === "sukkel" && !inzetKeuze) { fout = "Kies eerst je inzet."; return tekenTeam(); } doe("quiz_stuur", { p_token: token, p_vraag: v.id, p_antwoord: antw, p_inzet: inzetKeuze || 0 }); };
+  const bk = document.getElementById("bank"); if (bk) bk.onclick = () => doe("quiz_bank", { p_token: token });
+  const kp = document.getElementById("koop"); if (kp) kp.onclick = () => doe("quiz_koop", { p_token: token });
+  if (actief) { const el = document.getElementById(actief); if (el) { el.focus(); const n = el.value.length; try { el.setSelectionRange(n, n); } catch {} } }
+}
+const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+
+/* ================= BANK ================= */
+let pin = (() => { try { return sessionStorage.getItem("bq_pin"); } catch { return null; } })(), H = null, V = [], hsig = "", ronde = null, hfout = "", resetTekst = "", boek = {};
+
+async function bankStart(melding) {
+  if (!pin) {
+    app.innerHTML = kop() + `<div class="kaart" style="max-width:420px;margin:0 auto"><div class="label">De bank</div><h1>Pincode</h1><input type="text" id="pin" inputmode="numeric" autocomplete="off" style="margin-top:12px"><button class="breed" id="ok">Open de bank</button>${melding ? `<div class="fouttekst">${esc(melding)}</div>` : ""}</div>`;
+    document.getElementById("ok").onclick = async () => { const p = document.getElementById("pin").value.trim(); try { V = await rpc("quiz_host_vragen", { p_pin: p }); pin = p; try { sessionStorage.setItem("bq_pin", p); } catch {} bankStart(); } catch (e) { bankStart(e.message); } };
+    return;
+  }
+  try { V = await rpc("quiz_host_vragen", { p_pin: pin }); } catch (e) { pin = null; return bankStart(e.message); }
+  pollBank(); setInterval(pollBank, 1500); setInterval(async () => { try { V = await rpc("quiz_host_vragen", { p_pin: pin }); hsig = ""; } catch {} }, 8000);
+}
+async function pollBank() {
+  try { const d = await rpc("quiz_host", { p_pin: pin }); const s = JSON.stringify(d); H = d; if (!ronde) ronde = d.vraag ? d.vraag.ronde : V[0].ronde; if (s !== hsig) { hsig = s; tekenBank(); } } catch (e) {}
+}
+async function actie(fn, args) { hfout = ""; try { const r = await rpc(fn, Object.assign({ p_pin: pin }, args)); if (r && r.fout) hfout = r.fout; } catch (e) { hfout = e.message; } hsig = ""; if (fn !== "quiz_host_keur") { try { V = await rpc("quiz_host_vragen", { p_pin: pin }); } catch {} } await pollBank(); }
+function tekenBank() {
+  const actief = document.activeElement && document.activeElement.tagName === "INPUT" ? document.activeElement.id : null;
+  const d = H, v = d.vraag, rondes = [...new Set(V.map((x) => x.ronde))], lijst = V.filter((x) => x.ronde === ronde);
+  const volgende = v ? V.find((x) => x.id === v.id + 1) : V[0];
+  const faseNaam = { wacht: "Wachten", open: "OPEN", dicht: "Dicht", stand: "Stand op telefoons" }[d.fase];
+  let h = kop(`<div class="fiches">${faseNaam}</div>`) + `<div class="kolommen"><div>`;
+  h += `<div class="kaart"><div class="rij">${rondes.map((r) => `<button class="klein ${r === ronde ? "" : "stil"}" data-r="${esc(r)}">${esc(r.replace("Ronde ", "R"))}</button>`).join("")}</div>
+    <div class="vragen">${lijst.map((x) => `<button class="klein ${v && v.id === x.id ? "nu" : ""} ${x.gesloten ? "klaar" : "stil"}" data-open="${x.id}" title="${esc(x.tekst)}">${esc(x.nr)}</button>`).join("")}</div>
+    <p class="sub"><small>Tik op een nummer om die vraag open te zetten. Groen = al geweest.</small></p></div>`;
+  if (v) {
+    h += `<div class="kaart"><div class="label">${esc(v.ronde)} · vraag ${esc(v.nr)} · ${faseNaam}</div><h2>${esc(v.tekst)}</h2>
+      <div class="sleutel"><b>Antwoord:</b> ${esc(v.antwoord)}</div>
+      <div class="rij" style="margin-top:12px">
+        ${d.fase === "open" ? `<button class="rood" data-fase="dicht">Sluit vraag</button>` : `<button class="stil" data-fase="open">Heropen</button>`}
+        ${volgende ? `<button data-open="${volgende.id}">Volgende: ${esc(volgende.ronde.replace("Ronde ", "R"))} · ${esc(volgende.nr)}</button>` : ""}
+        <button class="stil" data-fase="stand">Stand tonen</button><button class="stil" data-fase="wacht">Wachtscherm</button>
+      </div>`;
+    if (v.modus === "waarde") h += `<div class="rij" style="margin-top:10px"><small>Waarde nu:</small>${[3, 2, 1].map((n, i) => `<button class="klein ${d.waarde === n ? "" : "stil"}" data-w="${n}">Stap ${i + 1} · ${n}</button>`).join("")}</div>`;
+    if (v.modus === "pot") h += `<div class="rij" style="margin-top:10px"><button class="groen" id="pot">Reken de pot uit</button><small>Dichtstbij pakt de pot, iedereen legt 1 in.</small></div>`;
+    if (v.modus === "bank") h += `<div class="rij" style="margin-top:10px"><button class="stil klein" id="bankalles">Einde ronde: alle stapels banken</button></div>`;
+    if (v.ronde === "Ronde 1" || v.ronde === "Ronde 3") h += `<div class="rij" style="margin-top:10px"><button class="groen klein" id="rondegok">Einde ronde: reken de rondegok af</button><small>${v.ronde === "Ronde 1" ? "Minstens 6 goed = inzet verdubbeld." : "Wie op het slechtste duo wedde, wint."}</small></div>`;
+    h += `<table style="margin-top:12px"><tr><th>Team</th><th>Antwoord</th><th>Tijd</th><th>Inzet</th><th></th><th></th></tr>
+      ${d.inzendingen.length ? d.inzendingen.map((i) => `<tr><td><b>${esc(i.team)}</b></td><td>${i.antwoord === null ? "<small>alleen inzet</small>" : esc(i.antwoord)}</td><td>${i.ms == null ? "" : (i.ms / 1000).toFixed(1) + " s"}</td>
+        <td>${v.modus === "waarde" ? i.waarde : i.inzet || ""}</td><td><span class="tag ${i.status}">${i.status === "inzet" ? "inzet" : i.status}${i.status === "goed" || i.status === "fout" ? " " + (i.delta > 0 ? "+" : "") + i.delta : ""}</span></td>
+        <td class="rij">${i.antwoord === null || v.soort === "sukkel" ? "" : `<button class="klein groen" data-keur="${i.id}" data-g="1">Goed</button><button class="klein rood" data-keur="${i.id}" data-g="0">Fout</button>`}</td></tr>`).join("") : `<tr><td colspan="6"><small>Nog geen antwoorden.</small></td></tr>`}</table></div>`;
+  } else h += `<div class="kaart"><h2>Nog geen vraag open</h2><p class="sub">Tik hierboven op vraag 1 om te beginnen.</p></div>`;
+  if (hfout) h += `<div class="kaart fouttekst">${esc(hfout)}</div>`;
+  h += `</div><div><div class="kaart"><h2>Stand</h2><table><tr><th>Team</th><th>Fiches</th><th>Weg</th><th>Boeken</th></tr>
+    ${[...d.teams].sort((a, b) => b.fiches - a.fiches).map((t) => `<tr><td>${t.bezet ? "<b>" + esc(t.naam) + "</b>" : "<small>Duo " + t.id + " (vrij)</small>"}${t.stapel ? `<br><small>stapel ${t.stapel}</small>` : ""}${t.shots ? `<br><small>🥃 ${t.shots}× bijgekocht</small>` : ""}</td><td><b>${t.fiches}</b></td><td>${t.weg ? `<span class="tag fout">${t.weg}×</span>` : ""}</td>
+      <td><div class="rij"><input type="number" id="b${t.id}" value="${esc(boek[t.id] ?? "")}" placeholder="±" style="width:70px;padding:8px;font-size:15px"><button class="klein" data-boek="${t.id}">Boek</button><button class="klein rood" data-straf="${t.id}" title="Betrapt op googelen: 3 fiches eraf">−3</button>${t.bezet ? `<button class="klein stil" data-vrij="${t.id}" title="Plek vrijgeven">↺</button>` : ""}</div></td></tr>`).join("")}</table>
+    <p class="sub"><small>Boek: zelf een aantal erbij of eraf. −3: betrapt op googelen. ↺ geeft de plek van een duo vrij (twee keer tikken).</small></p></div>
+    <div class="kaart"><h2>Meldingen</h2>${d.meldingen.length ? d.meldingen.map((m) => `<div class="melding ${m.soort === "weg" && m.fase === "open" ? "weg" : ""}">${esc(m.op)} · <b>${esc(m.team)}</b> ${m.soort === "weg" ? "verliet de pagina" : m.soort === "shot" ? "kocht 3 fiches: shotje! 🥃" : "is terug"}${m.vraag ? " (" + esc(m.vraag) + ", " + esc(m.fase) + ")" : ""}</div>`).join("") : "<small>Nog niets.</small>"}</div>
+    <div class="kaart"><h2>Alles wissen</h2><p class="sub"><small>Wist alle antwoorden, teams en de stand. Typ RESET en tik op de knop.</small></p><div class="rij" style="margin-top:8px"><input type="text" id="reset" value="${esc(resetTekst)}" style="width:140px;padding:8px;font-size:15px"><button class="klein rood" id="doereset">Wis alles</button></div></div>
+  </div></div>`;
+  app.innerHTML = h;
+  app.querySelectorAll("[data-r]").forEach((b) => b.onclick = () => { ronde = b.dataset.r; tekenBank(); });
+  app.querySelectorAll("[data-open]").forEach((b) => b.onclick = () => { const x = V.find((q) => q.id === +b.dataset.open); ronde = x.ronde; actie("quiz_host_open", { p_vraag: x.id }); });
+  app.querySelectorAll("[data-fase]").forEach((b) => b.onclick = () => actie("quiz_host_fase", { p_fase: b.dataset.fase }));
+  app.querySelectorAll("[data-w]").forEach((b) => b.onclick = () => actie("quiz_host_waarde", { p_waarde: +b.dataset.w }));
+  app.querySelectorAll("[data-keur]").forEach((b) => b.onclick = () => actie("quiz_host_keur", { p_id: +b.dataset.keur, p_goed: b.dataset.g === "1" }));
+  d.teams.forEach((t) => { const el = document.getElementById("b" + t.id); if (el) el.oninput = () => { boek[t.id] = el.value; }; });
+  app.querySelectorAll("[data-boek]").forEach((b) => b.onclick = () => { const n = parseInt(boek[b.dataset.boek], 10); if (!n) return; boek[b.dataset.boek] = ""; actie("quiz_host_boek", { p_team: +b.dataset.boek, p_delta: n, p_reden: "bank" }); });
+  app.querySelectorAll("[data-vrij]").forEach((b) => b.onclick = () => { if (b.dataset.zeker) actie("quiz_host_vrij", { p_team: +b.dataset.vrij }); else { b.dataset.zeker = "1"; b.textContent = "Zeker?"; b.classList.add("rood"); } });
+  const pot = document.getElementById("pot"); if (pot) pot.onclick = () => actie("quiz_host_pot", {});
+  const ba = document.getElementById("bankalles"); if (ba) ba.onclick = () => actie("quiz_host_bank_alles", {});
+  const rg = document.getElementById("rondegok"); if (rg) rg.onclick = () => actie("quiz_host_rondegok", { p_ronde: v.ronde });
+  app.querySelectorAll("[data-straf]").forEach((b) => b.onclick = () => { if (b.dataset.zeker) actie("quiz_host_boek", { p_team: +b.dataset.straf, p_delta: -3, p_reden: "googelen" }); else { b.dataset.zeker = "1"; b.textContent = "Zeker?"; } });
+  const rs = document.getElementById("reset"); rs.oninput = () => { resetTekst = rs.value; };
+  document.getElementById("doereset").onclick = () => { if (resetTekst.trim() !== "RESET") { hfout = "Typ eerst RESET in het vakje."; return tekenBank(); } resetTekst = ""; actie("quiz_host_reset", { p_zeker: "RESET" }); };
+  if (actief) { const el = document.getElementById(actief); if (el) { el.focus(); const n = el.value.length; try { el.setSelectionRange(n, n); } catch {} } }
+}
+
+(BANK ? bankStart : teamStart)();
+</script>
+</body>
+</html>
