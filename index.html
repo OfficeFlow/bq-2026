@@ -126,7 +126,7 @@ function standStart() {
 }
 
 /* ================= TEAM ================= */
-let token = ls.get("bq_token"), T = null, sig = "", gekozen = null, inzetKeuze = null, tekst = "", fout = "", bezig = false;
+let token = ls.get("bq_token"), T = null, toon = null, sig = "", gekozen = null, inzetKeuze = null, tekst = "", fout = "", bezig = false;
 
 async function teamStart() {
   if (!token) return kiesTeam();
@@ -162,16 +162,17 @@ async function pollTeam() {
     const d = await rpc("quiz_poll", { p_token: token });
     if (d.fout) { ls.del("bq_token"); token = null; return kiesTeam("Je plek is vrijgegeven. Kies opnieuw."); }
     const s = JSON.stringify(d);
-    const andereVraag = !T || (T.vraag && T.vraag.id) !== (d.vraag && d.vraag.id);
+    const andereVraag = !T || (T.vraag && T.vraag.id) !== (d.vraag && d.vraag.id) || T.waarde !== d.waarde;
     if (andereVraag) { gekozen = null; inzetKeuze = null; tekst = ""; fout = ""; }
-    if (T && d.fiches > T.fiches) munten(d.fiches - T.fiches);
+    if (toon === null || d.fase !== "open") { if (toon !== null && d.fiches > toon) munten(d.fiches - toon); toon = d.fiches; }
+    d.toon = toon;
     T = d; if (s !== sig) { sig = s; tekenTeam(); }
   } catch (e) { /* even geen verbinding: volgende poging */ }
 }
 function tekenTeam() {
   const actief = document.activeElement && document.activeElement.tagName === "INPUT" ? document.activeElement.id : null;
   const d = T, v = d.vraag, m = d.mijn;
-  let h = kop(`<div class="fiches">${d.fiches} fiches</div>`);
+  let h = kop(`<div class="fiches">${d.toon ?? d.fiches} fiches</div>`);
   if (d.fiches <= 0) h += `<div class="kaart midden" style="border-color:var(--rood)"><div class="label">Blut</div><h1>Geen fiches meer</h1><p class="sub">Koop 3 fiches. Prijs: één shotje, nu meteen.</p><button class="breed rood" id="koop">Koop 3 fiches 🥃</button></div>`;
   if (d.fase === "stand" && d.stand) {
     h += `<div class="kaart"><div class="label">Tussenstand</div><h1>De stand</h1><div class="stand">${d.stand.map((r, i) => `<div class="${r.ik ? "ik" : ""}"><span>${i + 1}. ${esc(r.naam)}</span><b>${r.fiches}</b></div>`).join("")}</div></div>`;
@@ -190,7 +191,7 @@ function tekenTeam() {
         <div class="opties">${(d.anderen || []).map((t) => `<button class="optie ${gekozen === String(t.id) ? "gekozen" : ""}" data-o="${t.id}"><b>${t.id}</b>${esc(t.naam)}</button>`).join("")}</div>
         <div class="inzet">${range(v.inzet_min, v.inzet_max).map((n) => `<button data-i="${n}" class="${inzetKeuze === n ? "gekozen" : ""}">${n}</button>`).join("")}</div>
         <button class="breed" id="stuur" ${bezig ? "disabled" : ""}>Verstuur</button>${fout ? `<div class="fouttekst">${esc(fout)}</div>` : ""}`;
-    } else if (d.fase === "open" && !(m && m.antwoord)) {
+    } else if (d.fase === "open" && !(m && m.antwoord && !m.opnieuw)) {
       const vooraf = v.inzet_vooraf, vast = !!m;
       if (vooraf && !vast) {
         h += `<p class="sub">${v.allin ? "All-in: hoeveel fiches zet je in? Goed is verdubbeld, fout is kwijt." : v.soort === "inzet" ? "Gehaald is inzet verdubbeld, niet gehaald is inzet kwijt." : "Zet eerst in. Goed is inzet verdubbeld, fout is inzet kwijt."}</p>`;
@@ -255,16 +256,31 @@ async function bankStart(melding) {
   }
   try { V = await rpc("quiz_host_vragen", { p_pin: pin }); } catch (e) { pin = null; return bankStart(e.message); }
   if (STAND) return standStart();
+  if (!window.__toets) {
+    window.__toets = true;
+    document.addEventListener("keydown", (e) => { const t = e.target; if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return; if (e.key === " " || e.key === "Enter" || e.key === "ArrowRight") { const b = document.querySelector(".groot-knop"); e.preventDefault(); if (b) { if (document.activeElement) document.activeElement.blur(); b.click(); } } });
+    document.addEventListener("keyup", (e) => { const t = e.target; if (e.key === " " && !(t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA"))) e.preventDefault(); });
+  }
   pollBank(); setInterval(pollBank, 1500); setInterval(async () => { try { V = await rpc("quiz_host_vragen", { p_pin: pin }); hsig = ""; } catch {} }, 8000);
 }
+let autoSleutel = null;
+function allesBinnen(d) {
+  const v = d.vraag; if (!v || d.fase !== "open" || !["open", "mc", "getal"].includes(v.soort)) return false;
+  const n = d.teams.filter((t) => t.bezet).length; if (!n) return false;
+  return d.inzendingen.filter((i) => i.antwoord !== null && (v.modus !== "waarde" || i.status === "goed" || i.waarde === d.waarde)).length >= n;
+}
 async function pollBank() {
-  try { const d = await rpc("quiz_host", { p_pin: pin }); const s = JSON.stringify(d); H = d; if (!ronde) ronde = d.vraag ? d.vraag.ronde : V[0].ronde; if (s !== hsig) { hsig = s; tekenBank(); } } catch (e) {}
+  try { const d = await rpc("quiz_host", { p_pin: pin }); const s = JSON.stringify(d); H = d; if (!ronde) ronde = d.vraag ? d.vraag.ronde : V[0].ronde;
+    if (allesBinnen(d)) { const sl = d.vraag.id + ":" + d.waarde; if (autoSleutel !== sl) { autoSleutel = sl; setTimeout(() => { if (H && H.fase === "open" && H.vraag && H.vraag.id === d.vraag.id && allesBinnen(H)) actie("quiz_host_fase", { p_fase: "dicht" }); }, 2500); } } else autoSleutel = null;
+    if (s !== hsig) { hsig = s; tekenBank(); } } catch (e) {}
 }
 async function actie(fn, args) { hfout = ""; try { const r = await rpc(fn, Object.assign({ p_pin: pin }, args)); if (r && r.fout) hfout = r.fout; } catch (e) { hfout = e.message; } hsig = ""; if (fn !== "quiz_host_keur") { try { V = await rpc("quiz_host_vragen", { p_pin: pin }); } catch {} } await pollBank(); }
 function tekenBank() {
   const actief = document.activeElement && document.activeElement.tagName === "INPUT" ? document.activeElement.id : null;
   const d = H, v = d.vraag, rondes = [...new Set(V.map((x) => x.ronde))], lijst = V.filter((x) => x.ronde === ronde);
   const volgende = v ? V.find((x) => x.id === v.id + 1) : V[0], vorige = v ? V.find((x) => x.id === v.id - 1) : null;
+  const bezetN = d.teams.filter((t) => t.bezet).length, goedN = d.inzendingen.filter((i) => i.status === "goed").length;
+  const stapKan = !!(v && v.modus === "waarde" && d.fase !== "open" && d.waarde > 1 && bezetN > goedN), wl = (n) => `${n} ${n === 1 ? "fiche" : "fiches"}`;
   const nakijken = d.inzendingen.filter((i) => i.status === "open" && i.antwoord !== null).length, laatste = v && (!volgende || volgende.ronde !== v.ronde);
   const faseNaam = { wacht: "Wachten", open: "OPEN", dicht: "Dicht", stand: "Stand op telefoons" }[d.fase];
   let h = kop(`<div class="fiches">${faseNaam}</div>`) + `<div class="kolommen"><div>`;
@@ -276,11 +292,13 @@ function tekenBank() {
       <div class="sleutel"><b>Antwoord:</b> ${esc(v.antwoord)}</div>
       <div class="rij" style="margin-top:14px">
         ${vorige ? `<button class="stil" data-open="${vorige.id}" title="Terug naar de vorige vraag">◀ Vorige</button>` : ""}
-        ${d.fase === "open" ? `<button class="rood groot-knop" data-fase="dicht">Stop de vraag</button>` : volgende ? `<button class="groot-knop" data-open="${volgende.id}">Volgende vraag ▶</button>` : `<button class="groot-knop" data-fase="stand">Einde: toon de stand op de telefoons</button>`}
+        ${d.fase === "open" ? `<button class="rood groot-knop" data-fase="dicht">Stop de vraag</button>` : stapKan ? `<button class="groot-knop" data-w="${d.waarde - 1}">Foto ${5 - d.waarde} (${wl(d.waarde - 1)}) ▶</button>` : volgende ? `<button class="groot-knop" data-open="${volgende.id}">Volgende vraag ▶</button>` : `<button class="groot-knop" data-fase="stand">Einde: toon de stand op de telefoons</button>`}
       </div>
+      ${stapKan && volgende ? `<div class="rij" style="margin-top:8px"><button class="stil" data-open="${volgende.id}">Volgende persoon ▶▶ (foto overslaan)</button></div>` : ""}
+      ${v.modus === "waarde" ? `<p class="sub"><small>Op de dia: foto ${4 - d.waarde} · goed = ${wl(d.waarde)}</small></p>` : ""}
       ${d.fase !== "open" && nakijken ? `<p class="sub" style="color:#FFD98A"><b>Nog ${nakijken} ${nakijken === 1 ? "antwoord" : "antwoorden"} na te kijken.</b></p>` : ""}
       ${meer ? `<div class="rij" style="margin-top:10px">${d.fase === "open" ? "" : `<button class="stil klein" data-fase="open">Heropen</button>`}<button class="stil klein" data-fase="stand">Stand op telefoons</button><button class="stil klein" data-fase="wacht">Wachtscherm</button></div>` : ""}`;
-    if (v.modus === "waarde") h += `<div class="rij" style="margin-top:10px"><small>Waarde nu:</small>${[3, 2, 1].map((n, i) => `<button class="klein ${d.waarde === n ? "" : "stil"}" data-w="${n}">Stap ${i + 1} · ${n}</button>`).join("")}</div>`;
+    if (v.modus === "waarde" && meer) h += `<div class="rij" style="margin-top:10px"><small>Waarde nu:</small>${[3, 2, 1].map((n, i) => `<button class="klein ${d.waarde === n ? "" : "stil"}" data-w="${n}">Stap ${i + 1} · ${n}</button>`).join("")}</div>`;
     if (v.modus === "pot") h += `<div class="rij" style="margin-top:10px"><button class="groen" id="pot">Reken de pot uit</button><small>Dichtstbij pakt de pot, iedereen legt 1 in.</small></div>`;
     if (v.modus === "bank" && (meer || (laatste && d.fase !== "open"))) h += `<div class="rij" style="margin-top:10px"><button class="groen klein" id="bankalles">Einde ronde: alle stapels banken</button></div>`;
     if ((v.ronde === "Ronde 1" || v.ronde === "Ronde 3") && (meer || (laatste && d.fase !== "open"))) h += `<div class="rij" style="margin-top:10px"><button class="groen klein" id="rondegok">Einde ronde: reken de rondegok af</button><small>${v.ronde === "Ronde 1" ? "Minstens 6 goed = inzet verdubbeld." : "Wie op het slechtste duo wedde, wint."}</small></div>`;
