@@ -28,6 +28,11 @@
   button.breed { width: 100%; font-size: 18px; margin-top: 12px; }
   button.rood { background: var(--rood); color: #fff; } button.groen { background: var(--groen); color: #fff; }
   button.groot-knop { flex: 1; padding: 22px 16px; font-size: 22px; }
+  button.groot-knop[disabled] { background: #3a3116; color: #FFD98A; border: 2px dashed #FFD98A; opacity: 1; cursor: not-allowed; }
+  .nakijk { border: 2px solid #FFD98A; border-radius: 12px; padding: 10px 12px; margin-top: 12px; background: rgba(255,217,138,.08); }
+  .nk { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.12); }
+  .nk-a { font-size: 20px; font-weight: 700; word-break: break-word; }
+  .nk .rij button { padding: 14px 18px; font-size: 18px; }
   button.stil { background: rgba(255,255,255,.1); color: #fff; } button.klein { padding: 8px 10px; font-size: 14px; border-radius: 9px; }
   .opties { display: grid; gap: 10px; margin-top: 12px; }
   .optie { display: flex; gap: 12px; align-items: center; text-align: left; background: #0e1930; color: #fff; border: 2px solid rgba(255,255,255,.2); font-weight: 600; }
@@ -126,24 +131,29 @@ function standStart() {
 }
 
 /* ================= TEAM ================= */
-let token = ls.get("bq_token"), T = null, toon = null, sig = "", gekozen = null, inzetKeuze = null, tekst = "", fout = "", bezig = false;
+let token = ls.get("bq_token"), T = null, toon = null, sig = "", gekozen = null, inzetKeuze = null, tekst = "", fout = "", bezig = false, naamTik = "", teamGestart = false;
 
 async function teamStart() {
   if (!token) return kiesTeam();
-  document.addEventListener("visibilitychange", () => { if (token) rpc("quiz_weg", { p_token: token, p_soort: document.hidden ? "weg" : "terug" }).catch(() => {}); });
-  pollTeam(); setInterval(pollTeam, 1500);
+  if (!teamGestart) {
+    teamGestart = true;
+    document.addEventListener("visibilitychange", () => { if (token) rpc("quiz_weg", { p_token: token, p_soort: document.hidden ? "weg" : "terug" }).catch(() => {}); });
+    setInterval(pollTeam, 1500);
+  }
+  pollTeam();
 }
 async function kiesTeam(melding) {
   let teams = [];
   try { teams = await rpc("quiz_teams_lijst"); } catch (e) { melding = e.message; }
-  app.innerHTML = kop() + `<div class="kaart"><div class="label">Welkom</div><h1>Kies je duo</h1><p class="sub">Eén telefoon per duo. Vul jullie teamnaam in en tik op een vrije plek.</p>
-    <input type="text" id="naam" maxlength="24" placeholder="Teamnaam" style="margin-top:14px" autocomplete="off">
-    <div class="opties">${teams.map((t) => `<button class="optie" data-t="${t.id}" ${t.bezet ? "disabled" : ""}><b>${t.id}</b>${t.bezet ? esc(t.naam) + " (bezet)" : "Duo " + t.id + " · vrij"}</button>`).join("")}</div>
+  app.innerHTML = kop() + `<div class="kaart"><div class="label">Welkom</div><h1>Kies je duo</h1><p class="sub">Eén telefoon per duo. Vul jullie teamnaam in en tik op een vrije plek. Terug na wegklikken? Typ dezelfde teamnaam en tik op jullie duo.</p>
+    <input type="text" id="naam" maxlength="24" placeholder="Teamnaam" value="${esc(naamTik)}" style="margin-top:14px" autocomplete="off">
+    <div class="opties">${teams.map((t) => `<button class="optie" data-t="${t.id}" ${t.bezet ? 'style="opacity:.75"' : ""}><b>${t.id}</b>${t.bezet ? esc(t.naam) + " · bezet, terugkomen?" : "Duo " + t.id + " · vrij"}</button>`).join("")}</div>
     ${melding ? `<div class="fouttekst">${esc(melding)}</div>` : ""}</div>`;
+  document.getElementById("naam").oninput = (e) => { naamTik = e.target.value; };
   app.querySelectorAll("[data-t]").forEach((b) => b.onclick = async () => {
     const naam = document.getElementById("naam").value.trim();
     if (naam.length < 2) return kiesTeam("Vul eerst een teamnaam in.");
-    try { const r = await rpc("quiz_claim", { p_team: +b.dataset.t, p_naam: naam }); if (r.fout) return kiesTeam(r.fout); token = r.token; ls.set("bq_token", token); teamStart(); }
+    try { const r = await rpc("quiz_claim", { p_team: +b.dataset.t, p_naam: naam }); if (r.fout) return kiesTeam(r.fout); token = r.token; ls.set("bq_token", token); T = null; sig = ""; toon = null; teamStart(); }
     catch (e) { kiesTeam(e.message); }
   });
 }
@@ -158,6 +168,7 @@ function munten(n) {
   if (navigator.vibrate) navigator.vibrate(120);
 }
 async function pollTeam() {
+  if (!token) return;
   try {
     const d = await rpc("quiz_poll", { p_token: token });
     if (d.fout) { ls.del("bq_token"); token = null; return kiesTeam("Je plek is vrijgegeven. Kies opnieuw."); }
@@ -258,12 +269,12 @@ async function bankStart(melding) {
   if (STAND) return standStart();
   if (!window.__toets) {
     window.__toets = true;
-    document.addEventListener("keydown", (e) => { const t = e.target; if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return; if (e.key === " " || e.key === "Enter" || e.key === "ArrowRight") { const b = document.querySelector(".groot-knop"); e.preventDefault(); if (b) { if (document.activeElement) document.activeElement.blur(); b.click(); } } });
+    document.addEventListener("keydown", (e) => { const t = e.target; if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return; if (e.key === " " || e.key === "Enter" || e.key === "ArrowRight") { const b = document.querySelector(".groot-knop:not([disabled])"); e.preventDefault(); if (b) { if (document.activeElement) document.activeElement.blur(); b.click(); } } });
     document.addEventListener("keyup", (e) => { const t = e.target; if (e.key === " " && !(t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA"))) e.preventDefault(); });
   }
   pollBank(); setInterval(pollBank, 1500); setInterval(async () => { try { V = await rpc("quiz_host_vragen", { p_pin: pin }); hsig = ""; } catch {} }, 8000);
 }
-let autoSleutel = null;
+let autoSleutel = null, autoDicht = ls.get("bq_auto") !== "uit";
 function allesBinnen(d) {
   const v = d.vraag; if (!v || d.fase !== "open" || !["open", "mc", "getal"].includes(v.soort)) return false;
   const n = d.teams.filter((t) => t.bezet).length; if (!n) return false;
@@ -271,7 +282,7 @@ function allesBinnen(d) {
 }
 async function pollBank() {
   try { const d = await rpc("quiz_host", { p_pin: pin }); const s = JSON.stringify(d); H = d; if (!ronde) ronde = d.vraag ? d.vraag.ronde : V[0].ronde;
-    if (allesBinnen(d)) { const sl = d.vraag.id + ":" + d.waarde; if (autoSleutel !== sl) { autoSleutel = sl; setTimeout(() => { if (H && H.fase === "open" && H.vraag && H.vraag.id === d.vraag.id && allesBinnen(H)) actie("quiz_host_fase", { p_fase: "dicht" }); }, 2500); } } else autoSleutel = null;
+    if (autoDicht && allesBinnen(d)) { const sl = d.vraag.id + ":" + d.waarde; if (autoSleutel !== sl) { autoSleutel = sl; setTimeout(() => { if (H && H.fase === "open" && H.vraag && H.vraag.id === d.vraag.id && allesBinnen(H)) actie("quiz_host_fase", { p_fase: "dicht" }); }, 2500); } } else autoSleutel = null;
     if (s !== hsig) { hsig = s; tekenBank(); } } catch (e) {}
 }
 async function actie(fn, args) { hfout = ""; try { const r = await rpc(fn, Object.assign({ p_pin: pin }, args)); if (r && r.fout) hfout = r.fout; } catch (e) { hfout = e.message; } hsig = ""; if (fn !== "quiz_host_keur") { try { V = await rpc("quiz_host_vragen", { p_pin: pin }); } catch {} } await pollBank(); }
@@ -281,7 +292,7 @@ function tekenBank() {
   const volgende = v ? V.find((x) => x.id === v.id + 1) : V[0], vorige = v ? V.find((x) => x.id === v.id - 1) : null;
   const bezetN = d.teams.filter((t) => t.bezet).length, goedN = d.inzendingen.filter((i) => i.status === "goed").length;
   const stapKan = !!(v && v.modus === "waarde" && d.fase !== "open" && d.waarde > 1 && bezetN > goedN), wl = (n) => `${n} ${n === 1 ? "fiche" : "fiches"}`;
-  const nakijken = d.inzendingen.filter((i) => i.status === "open" && i.antwoord !== null).length, laatste = v && (!volgende || volgende.ronde !== v.ronde);
+  const kijk = !!v && !["sukkel", "inzet"].includes(v.soort), wacht = kijk ? d.inzendingen.filter((i) => i.status === "open" && i.antwoord !== null) : [], nakijken = wacht.length, isPot = !!v && v.modus === "pot", laatste = v && (!volgende || volgende.ronde !== v.ronde);
   const faseNaam = { wacht: "Wachten", open: "OPEN", dicht: "Dicht", stand: "Stand op telefoons" }[d.fase];
   let h = kop(`<div class="fiches">${faseNaam}</div>`) + `<div class="kolommen"><div>`;
   if (meer) h += `<div class="kaart"><div class="rij">${rondes.map((r) => `<button class="klein ${r === ronde ? "" : "stil"}" data-r="${esc(r)}">${esc(r.replace("Ronde ", "R"))}</button>`).join("")}</div>
@@ -292,20 +303,21 @@ function tekenBank() {
       <div class="sleutel"><b>Antwoord:</b> ${esc(v.antwoord)}</div>
       <div class="rij" style="margin-top:14px">
         ${vorige ? `<button class="stil" data-open="${vorige.id}" title="Terug naar de vorige vraag">◀ Vorige</button>` : ""}
-        ${d.fase === "open" ? `<button class="rood groot-knop" data-fase="dicht">Stop de vraag</button>` : stapKan ? `<button class="groot-knop" data-w="${d.waarde - 1}">Foto ${5 - d.waarde} (${wl(d.waarde - 1)}) ▶</button>` : volgende ? `<button class="groot-knop" data-open="${volgende.id}">Volgende vraag ▶</button>` : `<button class="groot-knop" data-fase="stand">Einde: toon de stand op de telefoons</button>`}
+        ${d.fase === "open" ? `<button class="rood groot-knop" data-fase="dicht">Stop de vraag</button>` : nakijken ? (isPot ? `<button class="groot-knop" data-pot="1">Reken de pot uit</button>` : `<button class="groot-knop" disabled>Eerst nakijken (${nakijken})</button>`) : stapKan ? `<button class="groot-knop" data-w="${d.waarde - 1}">Foto ${5 - d.waarde} (${wl(d.waarde - 1)}) ▶</button>` : volgende ? `<button class="groot-knop" data-open="${volgende.id}">Volgende vraag ▶</button>` : `<button class="groot-knop" data-fase="stand">Einde: toon de stand op de telefoons</button>`}
       </div>
       ${stapKan && volgende ? `<div class="rij" style="margin-top:8px"><button class="stil" data-open="${volgende.id}">Volgende persoon ▶▶ (foto overslaan)</button></div>` : ""}
       ${v.modus === "waarde" ? `<p class="sub"><small>Op de dia: foto ${4 - d.waarde} · goed = ${wl(d.waarde)}</small></p>` : ""}
-      ${d.fase !== "open" && nakijken ? `<p class="sub" style="color:#FFD98A"><b>Nog ${nakijken} ${nakijken === 1 ? "antwoord" : "antwoorden"} na te kijken.</b></p>` : ""}
+      ${nakijken && !isPot ? `<div class="nakijk"><div class="rij" style="justify-content:space-between;align-items:center"><div class="label" style="margin:0">Nakijken · goed is: ${esc(v.antwoord)}</div>${nakijken > 1 ? `<button class="stil klein" data-rest="${wacht.map((i) => i.id).join(",")}">Rest fout (${nakijken})</button>` : ""}</div>${wacht.map((i) => `<div class="nk"><div><small>${esc(i.team)}</small><div class="nk-a">${esc(i.antwoord)}</div></div><div class="rij"><button class="groen" data-keur="${i.id}" data-g="1">Goed</button><button class="rood" data-keur="${i.id}" data-g="0">Fout</button></div></div>`).join("")}</div>` : ""}
+      ${nakijken && isPot ? `<p class="sub"><small>Dichtstbij pakt de pot, iedereen legt 1 in.</small></p>` : ""}
       ${meer ? `<div class="rij" style="margin-top:10px">${d.fase === "open" ? "" : `<button class="stil klein" data-fase="open">Heropen</button>`}<button class="stil klein" data-fase="stand">Stand op telefoons</button><button class="stil klein" data-fase="wacht">Wachtscherm</button></div>` : ""}`;
     if (v.modus === "waarde" && meer) h += `<div class="rij" style="margin-top:10px"><small>Waarde nu:</small>${[3, 2, 1].map((n, i) => `<button class="klein ${d.waarde === n ? "" : "stil"}" data-w="${n}">Stap ${i + 1} · ${n}</button>`).join("")}</div>`;
-    if (v.modus === "pot") h += `<div class="rij" style="margin-top:10px"><button class="groen" id="pot">Reken de pot uit</button><small>Dichtstbij pakt de pot, iedereen legt 1 in.</small></div>`;
+    if (v.modus === "pot" && meer) h += `<div class="rij" style="margin-top:10px"><button class="groen" id="pot">Reken de pot uit</button><small>Dichtstbij pakt de pot, iedereen legt 1 in.</small></div>`;
     if (v.modus === "bank" && (meer || (laatste && d.fase !== "open"))) h += `<div class="rij" style="margin-top:10px"><button class="groen klein" id="bankalles">Einde ronde: alle stapels banken</button></div>`;
     if ((v.ronde === "Ronde 1" || v.ronde === "Ronde 3") && (meer || (laatste && d.fase !== "open"))) h += `<div class="rij" style="margin-top:10px"><button class="groen klein" id="rondegok">Einde ronde: reken de rondegok af</button><small>${v.ronde === "Ronde 1" ? "Minstens 6 goed = inzet verdubbeld." : "Wie op het slechtste duo wedde, wint."}</small></div>`;
     h += `<table style="margin-top:12px"><tr><th>Team</th><th>Antwoord</th><th>Tijd</th><th>Inzet</th><th></th><th></th></tr>
       ${d.inzendingen.length ? d.inzendingen.map((i) => `<tr><td><b>${esc(i.team)}</b></td><td>${i.antwoord === null ? "<small>alleen inzet</small>" : esc(i.antwoord)}</td><td>${i.ms == null ? "" : (i.ms / 1000).toFixed(1) + " s"}</td>
         <td>${v.modus === "waarde" ? i.waarde : i.inzet || ""}</td><td><span class="tag ${i.status}">${i.status === "inzet" ? "inzet" : i.status}${i.status === "goed" || i.status === "fout" ? " " + (i.delta > 0 ? "+" : "") + i.delta : ""}</span></td>
-        <td class="rij">${i.antwoord === null || v.soort === "sukkel" || (v.soort === "mc" && !meer) ? "" : `<button class="klein groen" data-keur="${i.id}" data-g="1">Goed</button><button class="klein rood" data-keur="${i.id}" data-g="0">Fout</button>`}</td></tr>`).join("") : `<tr><td colspan="6"><small>Nog geen antwoorden.</small></td></tr>`}</table></div>`;
+        <td class="rij">${i.antwoord === null || v.soort === "sukkel" || (v.soort === "mc" && !meer) || wacht.includes(i) ? "" : `<button class="klein groen" data-keur="${i.id}" data-g="1">Goed</button><button class="klein rood" data-keur="${i.id}" data-g="0">Fout</button>`}</td></tr>`).join("") : `<tr><td colspan="6"><small>Nog geen antwoorden.</small></td></tr>`}</table></div>`;
   } else h += `<div class="kaart"><h2>Nog geen vraag open</h2><p class="sub">Wacht tot alle duo's zijn ingelogd. Daarna start je de quiz.</p><div class="rij" style="margin-top:14px"><button class="groot-knop" data-open="${V[0].id}">Start de quiz ▶</button></div></div>`;
   if (hfout) h += `<div class="kaart fouttekst">${esc(hfout)}</div>`;
   h += `</div><div><div class="kaart"><h2>Stand</h2><table><tr><th>Team</th><th>Fiches</th><th>Weg</th><th>Boeken</th></tr>
@@ -314,6 +326,7 @@ function tekenBank() {
     ${meer ? `<p class="sub"><small>Boek: zelf een aantal erbij of eraf. −3: betrapt op googelen. ↺ geeft de plek van een duo vrij (twee keer tikken).</small></p>` : ""}</div>
     <div class="kaart"><h2>Meldingen</h2>${d.meldingen.length ? d.meldingen.map((m) => `<div class="melding ${m.soort === "weg" && m.fase === "open" ? "weg" : ""}">${esc(m.op)} · <b>${esc(m.team)}</b> ${m.soort === "weg" ? "verliet de pagina" : m.soort === "shot" ? "kocht 3 fiches: shotje! 🥃" : "is terug"}${m.vraag ? " (" + esc(m.vraag) + ", " + esc(m.fase) + ")" : ""}</div>`).join("") : "<small>Nog niets.</small>"}</div>
     <div class="rij" style="margin-bottom:12px"><button class="stil klein" id="meer">${meer ? "Minder opties ▴" : "Meer opties ▾"}</button></div>
+    ${!meer ? "" : `<div class="rij" style="margin-bottom:12px"><button class="stil klein" id="autotoggle">Automatisch sluiten: ${autoDicht ? "aan" : "uit"}</button></div>`}
     ${!meer ? "" : `<div class="kaart"><h2>Alles wissen</h2><p class="sub"><small>Wist alle antwoorden, teams en de stand. Typ RESET en tik op de knop.</small></p><div class="rij" style="margin-top:8px"><input type="text" id="reset" value="${esc(resetTekst)}" style="width:140px;padding:8px;font-size:15px"><button class="klein rood" id="doereset">Wis alles</button></div></div>`}
   </div></div>`;
   app.innerHTML = h;
@@ -327,6 +340,9 @@ function tekenBank() {
   app.querySelectorAll("[data-boek]").forEach((b) => b.onclick = () => { const n = parseInt(boek[b.dataset.boek], 10); if (!n) return; boek[b.dataset.boek] = ""; actie("quiz_host_boek", { p_team: +b.dataset.boek, p_delta: n, p_reden: "bank" }); });
   app.querySelectorAll("[data-vrij]").forEach((b) => b.onclick = () => { if (b.dataset.zeker) actie("quiz_host_vrij", { p_team: +b.dataset.vrij }); else { b.dataset.zeker = "1"; b.textContent = "Zeker?"; b.classList.add("rood"); } });
   const pot = document.getElementById("pot"); if (pot) pot.onclick = () => actie("quiz_host_pot", {});
+  app.querySelectorAll("[data-rest]").forEach((b) => b.onclick = async () => { const ids = b.dataset.rest.split(",").map(Number); for (const i of H.inzendingen.filter((x) => ids.includes(x.id) && x.status === "open" && x.antwoord !== null)) { try { await rpc("quiz_host_keur", { p_pin: pin, p_id: i.id, p_goed: false }); } catch {} } hsig = ""; await pollBank(); });
+  app.querySelectorAll("[data-pot]").forEach((b) => b.onclick = () => actie("quiz_host_pot", {}));
+  const at = document.getElementById("autotoggle"); if (at) at.onclick = () => { autoDicht = !autoDicht; ls.set("bq_auto", autoDicht ? "aan" : "uit"); tekenBank(); };
   const ba = document.getElementById("bankalles"); if (ba) ba.onclick = () => actie("quiz_host_bank_alles", {});
   const rg = document.getElementById("rondegok"); if (rg) rg.onclick = () => actie("quiz_host_rondegok", { p_ronde: v.ronde });
   app.querySelectorAll("[data-pm]").forEach((b) => b.onclick = () => actie("quiz_host_boek", { p_team: +b.dataset.pm, p_delta: +b.dataset.d, p_reden: "bank" }));
