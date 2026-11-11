@@ -74,6 +74,38 @@
   .st-plek.zichtbaar { visibility: visible; animation: plof .5s ease-out; }
   .st-plek.een { background: var(--goud); color: var(--blauw); font-size: 6vh; }
   .st-plek span.nr { font-family: Georgia, serif; width: 8vw; } .st-plek span.nm { flex: 1; } 
+  .kr { position: relative; height: 82vh; margin-top: 1vh; border-radius: 2vh; overflow: hidden; border: .4vh solid var(--goud); background: #E6C07A; box-shadow: 0 1vh 4vh rgba(0,0,0,.5); }
+  .kr-hemel { position: absolute; left: 0; right: 0; top: 0; height: 14%; background: linear-gradient(#10224a 0%, #4a2f73 45%, #d9667a 80%, #f6a04e 100%); }
+  .kr-zon { position: absolute; left: 46%; bottom: -5vh; width: 13vh; height: 13vh; border-radius: 50%; background: radial-gradient(circle, #FFF2B0, #FFD25A 60%, #F59E2B); box-shadow: 0 0 6vh 2vh rgba(255,200,90,.5); }
+  .kr-palm { position: absolute; bottom: 0; font-size: 6.5vh; line-height: 1; }
+  .kr-boog { position: absolute; left: calc(88.5% - 7vw + .9vh); top: 2.4vh; width: 14vw; text-align: center; background: var(--goud); color: var(--blauw); font: 800 2.6vh Georgia, serif; letter-spacing: .3em; padding: .6vh 0 .6vh .3em; border-radius: 1vh; box-shadow: 0 .5vh 1.5vh rgba(0,0,0,.4); }
+  .kr-duinen { position: absolute; left: 0; right: 0; top: 8%; height: 7%; }
+  .kr-duinen svg { width: 100%; height: 100%; display: block; }
+  .kr-banen { position: absolute; left: 0; right: 0; top: 14%; bottom: 0; display: flex; flex-direction: column; background: linear-gradient(#EBCB8A, #DDB26B); }
+  .kr-baan { flex: 1; position: relative; border-top: .25vh dashed rgba(110,70,20,.45); }
+  .kr-baan:first-child { border-top: 0; } .kr-baan:nth-child(even) { background: rgba(120,80,20,.08); }
+  .kr-kameel { position: absolute; left: 0; bottom: 5%; height: var(--ch); width: calc(var(--ch) * 160 / 132); will-change: transform; z-index: 2; }
+  .kr-kameel .kl-svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .kr-kameel.rent .bn { animation: draf .44s ease-in-out infinite; } .kr-kameel.rent .b2, .kr-kameel.rent .b4 { animation-delay: -.22s; }
+  .kr-kameel.rent .kl-svg { animation: hobbel .44s ease-in-out infinite; }
+  .kr-kameel.wint .kl-svg { animation: hop .55s ease-in-out infinite; }
+  @keyframes draf { 0%, 100% { transform: rotate(-30deg); } 50% { transform: rotate(30deg); } }
+  @keyframes hobbel { 0%, 100% { transform: translateY(0) rotate(-1.2deg); } 50% { transform: translateY(-1.3vh) rotate(1.2deg); } }
+  @keyframes hop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2.4vh); } }
+  .kr-vlag { position: absolute; left: 42%; top: -3.1vh; transform: translateX(-50%); white-space: nowrap; max-width: 20vw; overflow: hidden; text-overflow: ellipsis; color: #fff; font-weight: 800; font-size: 2.1vh; line-height: 1.25; padding: .2vh 1.1vh; border-radius: 1vh; border: .25vh solid rgba(255,255,255,.85); box-shadow: 0 .4vh 1vh rgba(0,0,0,.35); z-index: 3; }
+  .kr-kroon { position: absolute; left: 42%; top: -7.4vh; transform: translateX(-50%); font-size: 3.8vh; z-index: 4; animation: plof .5s ease-out; }
+  .kr-start { position: absolute; left: 13%; top: 14%; bottom: 0; border-left: .5vh dashed rgba(255,255,255,.95); z-index: 1; }
+  .kr-finish { position: absolute; left: 88.5%; top: 14%; bottom: 0; width: 1.8vh; background: repeating-conic-gradient(#111 0 25%, #fff 0 50%) 0 0 / 1.8vh 1.8vh; z-index: 1; }
+  .kr-plek { position: absolute; right: 1.2%; top: 50%; transform: translateY(-50%) scale(0); width: 8vw; padding: .6vh 0 .8vh; border-radius: 1.4vh; background: rgba(16,34,74,.94); border: .3vh solid var(--goud); text-align: center; line-height: 1.05; z-index: 3; }
+  .kr-plek b { display: block; font: 700 5vh Georgia, serif; color: var(--goud); } .kr-plek span { font-size: 1.9vh; font-weight: 700; color: #fff; }
+  .kr-plek.goud { background: var(--goud); } .kr-plek.goud b, .kr-plek.goud span { color: var(--blauw); }
+  .kr-plek.pop { animation: kpop .5s ease-out forwards; }
+  @keyframes kpop { from { transform: translateY(-50%) scale(0); } 70% { transform: translateY(-50%) scale(1.2); } to { transform: translateY(-50%) scale(1); } }
+  .kr-tel { position: absolute; inset: 0; display: grid; place-items: center; font: 900 26vh Georgia, serif; color: #fff; text-shadow: 0 0 3vh #000, 0 0 1vh #000; pointer-events: none; z-index: 10; }
+  .kr-tel.tik { animation: tik .8s ease-out; }
+  @keyframes tik { from { transform: scale(2.2); opacity: 0; } 30% { opacity: 1; } to { transform: scale(1); opacity: 1; } }
+  .kr-stof { position: absolute; bottom: 6%; width: 2.2vh; height: 2.2vh; border-radius: 50%; background: rgba(255,246,224,.8); animation: stof .75s ease-out forwards; pointer-events: none; z-index: 1; }
+  @keyframes stof { to { transform: translate(-5vh, -2.2vh) scale(2.8); opacity: 0; } }
 </style>
 </head>
 <body>
@@ -81,7 +113,7 @@
 <script>
 // Casino Boedapest: teams antwoorden op hun telefoon, de bank keurt goed en ziet de stand.
 const API = "https://iqngwxepplobmkywfelk.supabase.co/rest/v1/rpc/", KEY = "sb_publishable_8qpSG7CXda-gKiqxxHY3tw_zDBsLyX1";
-const STAND = location.search.includes("stand"), BANK = STAND || location.search.includes("bank");
+const FINALE = location.search.includes("finale"), STAND = FINALE || location.search.includes("stand"), BANK = STAND || location.search.includes("bank");
 if (BANK) document.body.classList.add("bank");
 const app = document.getElementById("app");
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -98,9 +130,81 @@ const kop = (rechts) => `<header><div class="merk">CASINO BOEDAPEST</div>${recht
 /* ================= STAND OP HET GROTE SCHERM ================= */
 function standStart() {
   document.body.classList.add("scherm");
-  let stap = 0, teams = [], bezigS = false;
+  let stap = 0, teams = [], bezigS = false, geluid = null;
   const wacht = (ms) => new Promise((r) => setTimeout(r, ms));
-  const begin = () => { stap = 0; app.innerHTML = `<div class="st-titel" style="margin-top:30vh">TUSSENSTAND</div><div class="st-sub">Spatie of klik om te beginnen</div>`; };
+  const begin = () => { stap = 0; app.innerHTML = FINALE ? `<div class="st-titel" style="margin-top:30vh">EINDUITSLAG</div><div class="st-sub">Spatie of klik om te beginnen</div>` : `<div class="st-titel" style="margin-top:30vh">TUSSENSTAND</div><div class="st-sub">Spatie of klik om te beginnen</div>`; };
+  /* ---- finale: de kamelenrace. De eindvolgorde is de stand in fiches, onderweg wisselen de kamelen van plek. ---- */
+  const KLEUR = ["#E5484D", "#3B82F6", "#22A559", "#A855F7", "#FF8A1F"], X0 = 0.13, X1 = 0.885;
+  const lijst = (a) => a.length > 1 ? a.slice(0, -1).join(", ") + " en " + a[a.length - 1] : a[0];
+  const piep = (f, d = 0.18, v = 0.07) => { try { geluid = geluid || new (window.AudioContext || window.webkitAudioContext)(); const o = geluid.createOscillator(), g = geluid.createGain(); o.type = "square"; o.frequency.value = f; g.gain.value = v; o.connect(g); g.connect(geluid.destination); o.start(); g.gain.setTargetAtTime(0, geluid.currentTime + d * 0.7, 0.03); o.stop(geluid.currentTime + d + 0.15); } catch (e) {} };
+  const kameel = (kl, nr) => {
+    const been = (hx, hy, vul, rand) => `<path d="M${hx} ${hy} L${hx + 3} ${hy + 16} L${hx - 1} ${hy + 30}" fill="none" stroke="${rand}" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><path d="M${hx} ${hy} L${hx + 3} ${hy + 16} L${hx - 1} ${hy + 30}" fill="none" stroke="${vul}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="${hx - 1}" cy="${hy + 30}" rx="6" ry="3.4" fill="#5B3A1A"/>`;
+    return `<svg class="kl-svg" viewBox="0 0 160 132" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lg${nr}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EDBE78"/><stop offset="1" stop-color="#CC9250"/></linearGradient></defs>
+<ellipse cx="80" cy="125" rx="50" ry="4.5" fill="rgba(0,0,0,.28)"/>
+<path d="M25 68 C12 68 9 84 17 96" fill="none" stroke="#B98443" stroke-width="5" stroke-linecap="round"/><ellipse cx="17" cy="99" rx="4.6" ry="6.2" fill="#6B4423"/>
+<g class="bn b2" style="transform-origin:56px 94px">${been(56, 94, "#B98443", "#7A5020")}</g><g class="bn b3" style="transform-origin:84px 94px">${been(84, 94, "#B98443", "#7A5020")}</g>
+<path d="M24 70 C24 56 40 53 64 53 C90 53 108 57 108 72 C108 88 94 97 72 97 L50 97 C32 97 24 86 24 70 Z" fill="url(#lg${nr})" stroke="#8A5A24" stroke-width="1.6"/>
+<path d="M32 86 C42 95 64 97 92 95" fill="none" stroke="#B98443" stroke-width="2" opacity=".55"/>
+<g class="bn b1" style="transform-origin:40px 92px">${been(40, 92, "#D8A15A", "#8A5A24")}</g><g class="bn b4" style="transform-origin:98px 92px">${been(98, 92, "#D8A15A", "#8A5A24")}</g>
+<path d="M96 64 C106 50 110 36 112 22 L130 24 C130 40 126 58 118 78 Z" fill="url(#lg${nr})" stroke="#8A5A24" stroke-width="1.6"/>
+<path d="M44 58 C46 30 76 28 84 58 Z" fill="url(#lg${nr})" stroke="#8A5A24" stroke-width="1.6"/>
+<path d="M42 62 C45 44 80 42 86 62 L82 78 L46 78 Z" fill="${kl}" stroke="#F5D06B" stroke-width="1.8"/><path d="M44.5 71 L83.5 71" stroke="rgba(255,255,255,.55)" stroke-width="2.2"/>
+<text x="64" y="68" text-anchor="middle" font-family="Georgia,serif" font-size="13" font-weight="800" fill="#fff">${nr}</text>
+<path d="M110 16 C114 8 130 8 140 16 C146 20 146 28 138 30 L126 32 C116 32 108 24 110 16 Z" fill="url(#lg${nr})" stroke="#8A5A24" stroke-width="1.6"/>
+<path d="M117 12 L114 4 L123 9 Z" fill="#CC9250" stroke="#8A5A24" stroke-width="1.2" stroke-linejoin="round"/>
+<path d="M124 18 L112 17" stroke="${kl}" stroke-width="2.6" stroke-linecap="round"/><circle cx="130" cy="19" r="6.4" fill="rgba(210,235,255,.9)" stroke="${kl}" stroke-width="2.4"/><circle cx="131.5" cy="19.4" r="2.2" fill="#1a1a1a"/>
+<ellipse cx="141.5" cy="22" rx="1.2" ry="1.7" fill="#5B3A1A"/><path d="M129 29.5 Q139 32 145 27.5" fill="none" stroke="#5B3A1A" stroke-width="1.4" stroke-linecap="round"/>
+<rect x="138.5" y="30" width="3.6" height="4.4" rx=".8" fill="#fff" stroke="#7a5a3a" stroke-width=".6"/></svg>`;
+  };
+  let W = 0, kW = 0;
+  const zet = (ps) => { const b = app.querySelector(".kr-baan"), k = app.querySelector(".kr-kameel"); if (!b || !k) return; W = b.clientWidth; kW = k.offsetWidth; ps.forEach((p, i) => { const el = document.getElementById("k" + i); if (el) el.style.transform = `translateX(${W * X0 - kW + p * W * (X1 - X0)}px)`; }); };
+  async function opstellen() {
+    const d = await rpc("quiz_host", { p_pin: pin });
+    teams = d.teams.filter((t) => t.bezet).map((t) => ({ id: t.id, naam: t.naam, n: Math.max(0, t.fiches) }));
+    if (!teams.length) throw new Error("Er zijn geen duo's ingelogd");
+    const ch = Math.min(70.5 / teams.length * 0.68, 13), duin = `<svg viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 10 L0 5 Q8 1 18 4 T38 4 T60 3 T82 4 T100 2 L100 10 Z" fill="#B9843F"/><path d="M0 10 L0 7 Q12 3 26 6 T52 6 T78 5 T100 6 L100 10 Z" fill="#D2A25A"/></svg>`;
+    app.innerHTML = `<div class="st-titel" style="font-size:4.6vh;margin:0">CASINO BOEDAPEST</div><div class="st-sub" id="st-sub">De finale · spatie of klik voor de start</div>
+      <div class="kr" style="--ch:${ch}vh"><div class="kr-hemel"><div class="kr-zon"></div><span class="kr-palm" style="left:2%">🌴</span><span class="kr-palm" style="left:94%">🌴</span><div class="kr-boog">FINISH</div></div><div class="kr-duinen">${duin}</div>
+      <div class="kr-banen">${teams.map((t, i) => `<div class="kr-baan"><div class="kr-kameel" id="k${i}">${kameel(KLEUR[i % 5], i + 1)}<div class="kr-vlag" style="background:${KLEUR[i % 5]}">${esc(t.naam)}</div></div><div class="kr-plek" id="pl${i}"></div></div>`).join("")}</div>
+      <div class="kr-start"></div><div class="kr-finish"></div><div class="kr-tel" id="tel"></div></div>`;
+    zet(teams.map(() => 0));
+  }
+  async function race() {
+    const d = await rpc("quiz_host", { p_pin: pin });
+    teams.forEach((t) => { const x = d.teams.find((y) => y.id === t.id); if (x) t.n = Math.max(0, x.fiches); });
+    const waarden = [...new Set(teams.map((t) => t.n))].sort((a, b) => b - a), tijd = {}; let tt = 13.5;
+    waarden.forEach((w, k) => { if (k) tt += Math.min(3, Math.max(1.1, 0.35 * (waarden[k - 1] - w))); tijd[w] = tt; });
+    const R = teams.map((t) => { const rnd = Math.random, a1 = 0.3 + rnd() * 0.25, w1 = 0.8 + rnd() * 0.9, f1 = rnd() * 6.28, a2 = 0.1 + rnd() * 0.15, w2 = 1.8 + rnd() * 1.4, f2 = rnd() * 6.28, T = tijd[t.n];
+      const F = (s) => s + (a1 / w1) * (Math.cos(f1) - Math.cos(w1 * s + f1)) + (a2 / w2) * (Math.cos(f2) - Math.cos(w2 * s + f2));
+      return { T, F, FT: F(T) }; });
+    const sub = document.getElementById("st-sub"), tel = document.getElementById("tel"), banen = [...app.querySelectorAll(".kr-baan")];
+    for (const getal of ["3", "2", "1"]) { tel.textContent = getal; tel.classList.remove("tik"); void tel.offsetWidth; tel.classList.add("tik"); piep(523, 0.16); await wacht(900); }
+    tel.textContent = "GO!"; tel.classList.remove("tik"); void tel.offsetWidth; tel.classList.add("tik"); piep(1047, 0.45); setTimeout(() => { tel.textContent = ""; }, 900);
+    sub.textContent = "En ze zijn weg!";
+    const els = teams.map((_, i) => document.getElementById("k" + i)); els.forEach((e) => e.classList.add("rent"));
+    const klaar = teams.map(() => false), top = Math.max(...teams.map((t) => t.n)); let winnaar = false, ls1 = 0, ls2 = 0;
+    await new Promise((resolve) => {
+      const t0 = performance.now();
+      const frame = (nu) => {
+        const t = Math.max(0, (nu - t0) / 1000), ps = teams.map((tm, i) => klaar[i] ? 1 : Math.min(1, R[i].F(t) / R[i].FT));
+        teams.forEach((tm, i) => {
+          if (klaar[i] || t < R[i].T) return;
+          klaar[i] = true; ps[i] = 1; els[i].classList.remove("rent");
+          const plek = 1 + teams.filter((o) => o.n > tm.n).length, pl = document.getElementById("pl" + i);
+          pl.innerHTML = `<b>${plek}</b><span>${tm.n} fiches</span>`; pl.className = "kr-plek pop" + (plek === 1 ? " goud" : "");
+          if (plek === 1) { els[i].classList.add("wint"); els[i].insertAdjacentHTML("beforeend", `<span class="kr-kroon">👑</span>`); }
+          if (!winnaar) { winnaar = true; const w = teams.filter((o) => o.n === top).map((o) => o.naam); sub.textContent = `${lijst(w)} ${w.length > 1 ? "winnen" : "wint"} Casino Boedapest!`; [523, 659, 784, 1047].forEach((f, k) => setTimeout(() => piep(f, 0.22, 0.09), k * 150)); munten(14); }
+        });
+        zet(ps);
+        if (nu - ls1 > 110) { ls1 = nu; ps.forEach((p, i) => { if (klaar[i]) return; const o = document.createElement("i"); o.className = "kr-stof"; o.style.left = W * X0 - kW + p * W * (X1 - X0) + kW * 0.1 + "px"; banen[i].appendChild(o); setTimeout(() => o.remove(), 800); }); }
+        if (!winnaar && nu - ls2 > 900 && t > 2) { ls2 = nu; sub.textContent = "Op kop: " + teams[ps.indexOf(Math.max(...ps))].naam; }
+        if (klaar.every(Boolean)) return resolve();
+        requestAnimationFrame(frame);
+      };
+      requestAnimationFrame(frame);
+    });
+    await wacht(1200); sub.textContent = "Spatie of klik voor de einduitslag";
+  }
   async function stapels() {
     const d = await rpc("quiz_host", { p_pin: pin });
     teams = d.teams.filter((t) => t.bezet).map((t) => ({ naam: t.naam, n: Math.max(0, t.fiches) }));
@@ -115,13 +219,13 @@ function standStart() {
   }
   async function ranglijst() {
     const r = [...teams].sort((a, b) => b.n - a.n); r.forEach((t, i) => { t.plek = i && r[i - 1].n === t.n ? r[i - 1].plek : i + 1; });
-    app.innerHTML = `<div class="st-titel">DE STAND</div><div class="st-lijst">${r.map((t, i) => `<div class="st-plek ${t.plek === 1 ? "een" : ""}" id="p${i}"><span class="nr">${t.plek}</span><span class="nm">${esc(t.naam)}</span><span>${t.n} fiches</span></div>`).join("")}</div>`;
+    app.innerHTML = `<div class="st-titel">${FINALE ? "EINDUITSLAG" : "DE STAND"}</div><div class="st-lijst">${r.map((t, i) => `<div class="st-plek ${t.plek === 1 ? "een" : ""}" id="p${i}"><span class="nr">${t.plek}</span><span class="nm">${esc(t.naam)}</span><span>${t.n} fiches</span></div>`).join("")}</div>`;
     for (let i = r.length - 1; i >= 0; i--) { await wacht(i === 0 ? 1800 : 1100); document.getElementById("p" + i).classList.add("zichtbaar"); }
-    munten(8);
+    munten(FINALE ? 18 : 8);
   }
   async function verder() {
     if (bezigS) return; bezigS = true;
-    try { if (stap === 0) { stap = 1; await stapels(); } else if (stap === 1) { stap = 2; await ranglijst(); } else begin(); }
+    try { if (FINALE) { if (stap === 0) { stap = 1; await opstellen(); } else if (stap === 1) { stap = 2; await race(); } else if (stap === 2) { stap = 3; await ranglijst(); } else begin(); } else if (stap === 0) { stap = 1; await stapels(); } else if (stap === 1) { stap = 2; await ranglijst(); } else begin(); }
     catch (e) { app.innerHTML = `<div class="st-titel" style="margin-top:30vh">Geen verbinding</div><div class="st-sub">${esc(e.message)}. Spatie om opnieuw te proberen.</div>`; stap = 0; }
     bezigS = false;
   }
