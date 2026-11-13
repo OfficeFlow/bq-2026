@@ -38,6 +38,11 @@
   .optie { display: flex; gap: 12px; align-items: center; text-align: left; background: #0e1930; color: #fff; border: 2px solid rgba(255,255,255,.2); font-weight: 600; }
   .optie b { background: var(--goud); color: var(--blauw); border-radius: 50%; width: 34px; height: 34px; display: grid; place-items: center; flex: none; }
   .optie.gekozen { border-color: var(--goud); background: rgba(233,185,73,.18); }
+  .namen { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .naam { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; background: #0e1930; color: #fff; border: 2px solid rgba(255,255,255,.2); font-size: 19px; padding: 14px 14px; }
+  .naam small { font-size: 12px; font-weight: 600; color: var(--licht); opacity: .8; }
+  .naam.bezet { opacity: .55; }
+  .naam.gekozen { border-color: var(--goud); background: rgba(233,185,73,.22); opacity: 1; box-shadow: 0 0 0 2px rgba(233,185,73,.35); }
   .rij { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .inzet { display: flex; gap: 8px; margin-top: 10px; } .inzet button { flex: 1; background: #0e1930; color: #fff; border: 2px solid rgba(255,255,255,.2); }
   .inzet button.gekozen { background: var(--goud); color: var(--blauw); border-color: var(--goud); }
@@ -248,20 +253,38 @@ async function teamStart() {
   }
   pollTeam();
 }
+const SPELERS = [["andrew", "Andrew"], ["gijs", "Gijs"], ["gilles", "Gilles"], ["kevin", "Kevin"], ["stijn", "Stijn"], ["sven", "Sven"], ["tijn", "Tijn"], ["tj", "TJ"], ["tristan", "Tristan"], ["wessel", "Wessel"]];
+const spelerNaam = (k) => (SPELERS.find((s) => s[0] === k) || [k, k])[1];
+let keuze = [], naamAangepast = false, claimBezig = false;
 async function kiesTeam(melding) {
   let teams = [];
   try { teams = await rpc("quiz_teams_lijst"); } catch (e) { melding = e.message; }
-  app.innerHTML = kop() + `<div class="kaart"><div class="label">Welkom</div><h1>Kies je duo</h1><p class="sub">Eén telefoon per duo. Vul jullie teamnaam in en tik op een vrije plek. Terug na wegklikken? Typ dezelfde teamnaam en tik op jullie duo.</p>
-    <input type="text" id="naam" maxlength="24" placeholder="Teamnaam" value="${esc(naamTik)}" style="margin-top:14px" autocomplete="off">
-    <div class="opties">${teams.map((t) => `<button class="optie" data-t="${t.id}" ${t.bezet ? 'style="opacity:.75"' : ""}><b>${t.id}</b>${t.bezet ? esc(t.naam) + " · bezet, terugkomen?" : "Duo " + t.id + " · vrij"}</button>`).join("")}</div>
+  const inDuo = {}; teams.forEach((t) => (t.spelers || []).forEach((s) => { inDuo[s] = t; }));
+  const auto = keuze.length === 2 ? keuze.map(spelerNaam).join(" & ") : "";
+  if (!naamAangepast) naamTik = auto;
+  const terug = keuze.length === 2 && inDuo[keuze[0]] && inDuo[keuze[0]] === inDuo[keuze[1]];
+  const nog = 2 - keuze.length;
+  app.innerHTML = kop() + `<div class="kaart"><div class="label">Welkom</div><h1>Wie zijn jullie?</h1><p class="sub">Eén telefoon per duo. Tik de twee namen van jullie duo aan. Weggeklikt? Tik dezelfde twee namen en je bent terug.</p>
+    <div class="namen">${SPELERS.map(([k, n]) => `<button class="naam${keuze.includes(k) ? " gekozen" : ""}${inDuo[k] ? " bezet" : ""}" data-s="${k}" aria-pressed="${keuze.includes(k)}">${esc(n)}${inDuo[k] ? `<small>${esc(inDuo[k].naam || "")}</small>` : ""}</button>`).join("")}</div>
+    <label class="sub" for="naam" style="display:block;margin-top:16px">Duonaam</label>
+    <input type="text" id="naam" maxlength="24" placeholder="Bijvoorbeeld TJ & Sven" value="${esc(naamTik)}" autocomplete="off" style="margin-top:6px">
+    <button class="breed" id="claim" ${nog ? "disabled" : ""}>${terug ? "Terug naar ons duo" : nog ? `Tik nog ${nog} ${nog === 1 ? "naam" : "namen"} aan` : "Start als duo"}</button>
     ${melding ? `<div class="fouttekst">${esc(melding)}</div>` : ""}</div>`;
-  document.getElementById("naam").oninput = (e) => { naamTik = e.target.value; };
-  app.querySelectorAll("[data-t]").forEach((b) => b.onclick = async () => {
-    const naam = document.getElementById("naam").value.trim();
-    if (naam.length < 2) return kiesTeam("Vul eerst een teamnaam in.");
-    try { const r = await rpc("quiz_claim", { p_team: +b.dataset.t, p_naam: naam }); if (r.fout) return kiesTeam(r.fout); token = r.token; ls.set("bq_token", token); T = null; sig = ""; toon = null; teamStart(); }
-    catch (e) { kiesTeam(e.message); }
+  app.querySelectorAll("[data-s]").forEach((b) => b.onclick = () => {
+    const k = b.dataset.s;
+    if (keuze.includes(k)) keuze = keuze.filter((x) => x !== k); else keuze = keuze.length < 2 ? [...keuze, k] : [keuze[1], k];
+    kiesTeam();
   });
+  document.getElementById("naam").oninput = (e) => { naamTik = e.target.value; naamAangepast = naamTik.trim() !== "" && naamTik !== auto; };
+  document.getElementById("claim").onclick = async () => {
+    if (keuze.length !== 2 || claimBezig) return;
+    claimBezig = true;
+    try {
+      const r = await rpc("quiz_claim_duo", { p_spelers: keuze, p_naam: (naamTik || auto).trim() });
+      if (r.fout) { claimBezig = false; return kiesTeam(r.fout); }
+      token = r.token; ls.set("bq_token", token); T = null; sig = ""; toon = null; keuze = []; naamAangepast = false; claimBezig = false; teamStart();
+    } catch (e) { claimBezig = false; kiesTeam(e.message); }
+  };
 }
 function munten(n) {
   const k = Math.min(60, 12 + n * 8);
