@@ -419,6 +419,17 @@ button { font: inherit; }
 .foto-kader img { height: 100%; width: auto; max-width: 560px; display: block; object-fit: cover; }
 .foto-kader.is-antwoord img { animation: flipIn .9s cubic-bezier(.2, .9, .25, 1.3) both; transform-origin: 50% 100%; }
 #login .map-tekst.is-leeg { color: #A31D33; font-weight: 700; }
+
+/* de dia's uit de PowerPoint */
+.dia { position: absolute; left: 50%; top: 122px; transform: translateX(-50%); width: 1520px; height: 855px; border-radius: 14px; overflow: hidden; background: #F4EEDD; box-shadow: 0 0 0 3px #B58428, 0 0 0 7px #F2CF79, 0 0 0 10px #8C5E16, 0 30px 80px rgba(0, 0, 0, .7); animation: kaartIn .7s cubic-bezier(.2, .9, .25, 1.08) both; }
+.dia > img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.dia video, .foto-kader.is-dia video { position: absolute; object-fit: cover; background: #000; cursor: pointer; }
+.dia ~ .groot-onder { top: 992px; }
+.vraag-rij.met-dia { top: 128px; height: 380px; left: 120px; right: 120px; }
+.foto-kader.is-dia { position: relative; height: 380px; width: 676px; background: #F4EEDD; }
+.foto-kader.is-dia > img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; }
+.foto-kader.is-dia.is-antwoord > img { animation: flipIn .9s cubic-bezier(.2, .9, .25, 1.3) both; transform-origin: 50% 100%; }
+@media (prefers-reduced-motion: reduce) { .dia { animation: none !important; } }
 </style></head><body><div id="podium"><div id="stage">
   <canvas id="gl" aria-hidden="true"></canvas>
   <div id="labels" aria-hidden="true"></div>
@@ -5820,12 +5831,26 @@ function lijnZet(q, onthuld, anim) {
 
 /* ---------- beeldmap (foto's en video's blijven op deze laptop) ---------- */
 const MEDIA = {};
-// De foto's (BN'ers en monumenten) horen bij de show en staan naast show.html in de map beeld/.
-// De beeldmap is alleen nog nodig voor de eigen video's van ronde 6 (en kan foto's vervangen).
-const BEELD = ["12-1.jpg", "12-2.jpg", "12-3.jpg", "12-antwoord.jpg", "13-1.jpg", "13-2.jpg", "13-3.jpg", "13-antwoord.jpg", "14-1.jpg", "14-2.jpg", "14-3.jpg", "14-antwoord.jpg", "15-1.jpg", "15-2.jpg", "15-3.jpg", "15-antwoord.jpg", "16-1.jpg", "16-2.jpg", "16-3.jpg", "16-antwoord.jpg", "17-1.jpg", "17-2.jpg", "17-3.jpg", "17-antwoord.jpg", "18-1.jpg", "18-2.jpg", "18-3.jpg", "18-antwoord.jpg", "19-1.jpg", "19-2.jpg", "19-3.jpg", "19-antwoord.jpg", "20-1.jpg", "20-2.jpg", "20-3.jpg", "20-antwoord.jpg", "21-1.jpg", "21-2.jpg", "21-3.jpg", "21-antwoord.jpg", "43-antwoord.jpg", "43.jpg", "44-antwoord.jpg", "44.jpg", "45-antwoord.jpg", "45.jpg", "46-antwoord.jpg", "46.jpg", "47-antwoord.jpg", "47.jpg", "48-antwoord.jpg", "48.jpg", "49-antwoord.jpg", "49.jpg", "50-antwoord.jpg", "50.jpg", "51-antwoord.jpg", "51.jpg", "52-antwoord.jpg", "52.jpg"];
-for (const naam of BEELD) { const m = naam.match(/^(\d+)(?:-([a-z0-9]+))?\.jpg$/); if (m) (MEDIA[+m[1]] = MEDIA[+m[1]] || {})[m[2] || 'hoofd'] = { url: 'beeld/' + naam, video: false }; }
+// De dia's uit de PowerPoint, per vraag: vraag, de drie stappen van de BN'ers (w3, w2, w1), de titeldia van een video (inzet),
+// het verhaal van de finale en de antwoorddia. 'vlak' is de plek van de video op de dia, net als in de PowerPoint.
+const DIA = {"2": {"vraag": "dia/006.jpg"}, "3": {"vraag": "dia/007.jpg"}, "4": {"vraag": "dia/008.jpg"}, "5": {"vraag": "dia/009.jpg"}, "6": {"vraag": "dia/010.jpg"}, "7": {"vraag": "dia/011.jpg"}, "8": {"vraag": "dia/012.jpg"}, "9": {"vraag": "dia/013.jpg"}, "10": {"vraag": "dia/014.jpg"}, "11": {"vraag": "dia/015.jpg"}, "12": {"w3": "dia/018.jpg", "w2": "dia/019.jpg", "w1": "dia/020.jpg", "vraag": "dia/018.jpg", "antwoord": "dia/050.jpg"}, "13": {"w3": "dia/021.jpg", "w2": "dia/022.jpg", "w1": "dia/023.jpg", "vraag": "dia/021.jpg", "antwoord": "dia/052.jpg"}, "14": {"w3": "dia/024.jpg", "w2": "dia/025.jpg", "w1": "dia/026.jpg", "vraag": "dia/024.jpg", "antwoord": "dia/054.jpg"}, "15": {"w3": "dia/027.jpg", "w2": "dia/028.jpg", "w1": "dia/029.jpg", "vraag": "dia/027.jpg", "antwoord": "dia/056.jpg"}, "16": {"w3": "dia/030.jpg", "w2": "dia/031.jpg", "w1": "dia/032.jpg", "vraag": "dia/030.jpg", "antwoord": "dia/058.jpg"}, "17": {"w3": "dia/033.jpg", "w2": "dia/034.jpg", "w1": "dia/035.jpg", "vraag": "dia/033.jpg", "antwoord": "dia/060.jpg"}, "18": {"w3": "dia/036.jpg", "w2": "dia/037.jpg", "w1": "dia/038.jpg", "vraag": "dia/036.jpg", "antwoord": "dia/062.jpg"}, "19": {"w3": "dia/039.jpg", "w2": "dia/040.jpg", "w1": "dia/041.jpg", "vraag": "dia/039.jpg", "antwoord": "dia/064.jpg"}, "20": {"w3": "dia/042.jpg", "w2": "dia/043.jpg", "w1": "dia/044.jpg", "vraag": "dia/042.jpg", "antwoord": "dia/066.jpg"}, "21": {"w3": "dia/045.jpg", "w2": "dia/046.jpg", "w1": "dia/047.jpg", "vraag": "dia/045.jpg", "antwoord": "dia/068.jpg"}, "23": {"vraag": "dia/071.jpg"}, "24": {"vraag": "dia/072.jpg"}, "25": {"vraag": "dia/073.jpg"}, "26": {"vraag": "dia/074.jpg"}, "27": {"vraag": "dia/075.jpg"}, "28": {"vraag": "dia/076.jpg"}, "29": {"vraag": "dia/077.jpg"}, "30": {"vraag": "dia/078.jpg"}, "31": {"vraag": "dia/079.jpg"}, "32": {"vraag": "dia/080.jpg"}, "33": {"vraag": "dia/083.jpg"}, "34": {"vraag": "dia/084.jpg"}, "35": {"vraag": "dia/085.jpg"}, "36": {"vraag": "dia/086.jpg"}, "37": {"vraag": "dia/087.jpg"}, "38": {"vraag": "dia/088.jpg"}, "39": {"vraag": "dia/089.jpg"}, "40": {"vraag": "dia/090.jpg"}, "41": {"vraag": "dia/091.jpg"}, "42": {"vraag": "dia/092.jpg"}, "43": {"vraag": "dia/096.jpg", "antwoord": "dia/107.jpg"}, "44": {"vraag": "dia/097.jpg", "antwoord": "dia/108.jpg"}, "45": {"vraag": "dia/098.jpg", "antwoord": "dia/109.jpg"}, "46": {"vraag": "dia/099.jpg", "antwoord": "dia/110.jpg"}, "47": {"vraag": "dia/100.jpg", "antwoord": "dia/111.jpg"}, "48": {"vraag": "dia/101.jpg", "antwoord": "dia/112.jpg"}, "49": {"vraag": "dia/102.jpg", "antwoord": "dia/113.jpg"}, "50": {"vraag": "dia/103.jpg", "antwoord": "dia/114.jpg"}, "51": {"vraag": "dia/104.jpg", "antwoord": "dia/115.jpg"}, "52": {"vraag": "dia/105.jpg", "antwoord": "dia/116.jpg"}, "53": {"inzet": "dia/119.jpg", "vraag": "dia/120.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}}, "54": {"inzet": "dia/121.jpg", "vraag": "dia/122.jpg", "antwoord": "dia/123.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}}, "55": {"inzet": "dia/124.jpg", "vraag": "dia/125.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}}, "56": {"inzet": "dia/126.jpg", "vraag": "dia/127.jpg", "antwoord": "dia/128.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}}, "57": {"inzet": "dia/129.jpg", "vraag": "dia/130.jpg", "antwoord": "dia/131.jpg", "vlak": {"x": 0.6562, "y": 0.0533, "w": 0.2701, "h": 0.8933}}, "58": {"inzet": "dia/132.jpg", "vraag": "dia/133.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}}, "59": {"inzet": "dia/134.jpg", "vraag": "dia/135.jpg", "antwoord": "dia/136.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}}, "60": {"inzet": "dia/137.jpg", "vraag": "dia/138.jpg", "antwoord": "dia/139.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}}, "61": {"vraag": "dia/142.jpg", "antwoord": "dia/143.jpg"}, "62": {"vraag": "dia/144.jpg", "antwoord": "dia/145.jpg"}, "63": {"vraag": "dia/146.jpg", "antwoord": "dia/147.jpg"}, "64": {"vraag": "dia/148.jpg", "antwoord": "dia/149.jpg"}, "65": {"vraag": "dia/150.jpg", "antwoord": "dia/151.jpg"}, "66": {"vraag": "dia/152.jpg", "antwoord": "dia/153.jpg"}, "67": {"vraag": "dia/154.jpg", "antwoord": "dia/155.jpg"}, "68": {"vraag": "dia/156.jpg", "antwoord": "dia/157.jpg"}, "69": {"vraag": "dia/158.jpg", "antwoord": "dia/159.jpg"}, "70": {"vraag": "dia/160.jpg", "antwoord": "dia/161.jpg"}, "71": {"vraag": "dia/162.jpg", "antwoord": "dia/163.jpg"}, "72": {"vraag": "dia/164.jpg", "antwoord": "dia/165.jpg"}, "73": {"vraag": "dia/166.jpg", "antwoord": "dia/167.jpg"}, "74": {"vraag": "dia/168.jpg", "antwoord": "dia/169.jpg"}, "75": {"vraag": "dia/170.jpg", "antwoord": "dia/171.jpg"}, "76": {"vraag": "dia/172.jpg", "antwoord": "dia/173.jpg"}, "77": {"vraag": "dia/174.jpg", "antwoord": "dia/175.jpg"}, "78": {"vraag": "dia/176.jpg", "antwoord": "dia/177.jpg"}, "79": {"vraag": "dia/178.jpg", "antwoord": "dia/179.jpg"}, "80": {"vraag": "dia/180.jpg", "antwoord": "dia/181.jpg"}, "81": {"vraag": "dia/182.jpg", "antwoord": "dia/183.jpg"}, "82": {"vraag": "dia/184.jpg", "antwoord": "dia/185.jpg"}, "83": {"vraag": "dia/188.jpg"}, "84": {"vraag": "dia/189.jpg"}, "85": {"vraag": "dia/190.jpg"}, "86": {"vraag": "dia/191.jpg"}, "87": {"vraag": "dia/192.jpg"}, "88": {"vraag": "dia/193.jpg"}, "89": {"vraag": "dia/194.jpg"}, "90": {"vraag": "dia/195.jpg"}, "91": {"vraag": "dia/196.jpg"}, "92": {"vraag": "dia/197.jpg"}, "93": {"inzet": "dia/201.jpg", "verhaal": "dia/202.jpg", "vraag": "dia/203.jpg"}};
 let mapBestanden = 0;
-function laadBeeldVooruit() { BEELD.forEach((naam, k) => setTimeout(() => { const i = new Image(); i.src = 'beeld/' + naam; }, 150 * k)); }
+const diaGeladen = new Set();
+function laadDia(q) { const d = q && DIA[q.id]; if (!d) return; Object.values(d).forEach((v) => { if (typeof v === 'string' && !diaGeladen.has(v)) { diaGeladen.add(v); const i = new Image(); i.src = v; } }); }
+function laadVooruit(vid) { const i = VR.findIndex((q) => q.id === vid); if (i >= 0) VR.slice(i, i + 4).forEach(laadDia); }
+function diaRol(q, stadium) {
+  const d = DIA[q.id]; if (!d) return null;
+  if (stadium === 'inzet') return d.inzet ? 'inzet' : null;
+  if (stadium === 'verhaal') return d.verhaal ? 'verhaal' : null;
+  if (q.modus === 'waarde' && d['w' + (DB ? DB.waarde : 3)]) return 'w' + (DB ? DB.waarde : 3);
+  return d.vraag ? 'vraag' : null;
+}
+// de dia met (als die er is) de video op dezelfde plek als in de PowerPoint
+function diaBinnen(q, rol) {
+  const d = DIA[q.id], v = d.vlak, m = MEDIA[q.id];
+  const vid = v && m ? (rol === 'antwoord' ? m.antwoord : rol === 'vraag' ? m.vraag || m.hoofd : null) : null;
+  return `<img src="${d[rol]}" alt="">${vid && vid.video ? `<video src="${vid.url}" playsinline preload="auto" style="left:${v.x * 100}%;top:${v.y * 100}%;width:${v.w * 100}%;height:${v.h * 100}%"></video>` : ''}`;
+}
 function leesMap(files) {
   for (const f of files) {
     const m = f.name.match(/^(\d+)(?:[-_ ]([a-z0-9]+))?\.(jpe?g|png|webp|gif|avif|mp4|webm|mov|m4v)$/i); if (!m) continue;
@@ -5848,16 +5873,16 @@ function mediaVan(q) {
   return m.vraag || m.hoofd || null;
 }
 // foto naast de vraagkaart na het sluiten: het beeld van de vraag, bij het onthullen het antwoordbeeld
-function fotoVan(q) { const m = mediaVan(q); return m && !m.video ? m.url : null; }
-function antwoordFoto(q) { const m = MEDIA[q.id]; return m && m.antwoord && !m.antwoord.video ? m.antwoord.url : null; }
+function fotoVan(q) { const r = diaRol(q, 'vraag'); return r ? DIA[q.id][r] : null; }
+function antwoordFoto(q) { const d = DIA[q.id]; return d && d.antwoord ? d.antwoord : null; }
 function speelMedia() { const v = $('#laag video'); if (v) { try { v.currentTime = 0; } catch (e) { /* nog niet geladen */ } v.play().catch(() => {}); } }
 const waardeHTML = () => `<span class="waarde" id="waarde"><span class="stappen">${[3, 2, 1].map((w) => `<b data-w="${w}">${w}</b>`).join('')}</span><span id="waarde-tekst"></span></span>`;
 function waardeZet(q) {
   const w = DB ? DB.waarde : 3;
   $$('#waarde b').forEach((b) => { const v = +b.dataset.w; b.classList.toggle('is-nu', v === w); b.classList.toggle('is-voorbij', v > w); });
   const t = $('#waarde-tekst'); if (t) t.textContent = `Nu goed voor ${w} ${w === 1 ? 'fiche' : 'fiches'}`;
-  const img = $('#media img'), m = q ? mediaVan(q) : null;
-  if (img && m && !m.video && img.getAttribute('src') !== m.url) img.src = m.url;
+  const img = $('#dia img'), rol = q ? diaRol(q, 'vraag') : null;
+  if (img && rol && img.getAttribute('src') !== DIA[q.id][rol]) img.src = DIA[q.id][rol];
 }
 
 /* ---------- scènes ---------- */
@@ -6030,6 +6055,8 @@ const volgStadium = (q, st) => { const s = STADIA(q); return s[s.indexOf(st) + 1
 function beginStadium(q, f) { if (f !== 'open') return 'vraag'; const s = STADIA(q); return s[0] === 'inzet' && alleIngezet(q) ? s[1] : s[0]; }
 function vraagHTML(q, stadium, groot, foto) {
   const fin = q.ronde === 'Finale', onder = (extra = '') => `<div class="${groot ? 'groot-onder' : 'onder'}" id="onder">${extra}<span class="pil" id="teller"></span></div>`;
+  const rol = groot ? diaRol(q, stadium) : null;
+  if (rol) return `<div class="dia" id="dia">${diaBinnen(q, rol)}</div>${onder(q.modus === 'waarde' && stadium === 'vraag' ? waardeHTML() : '')}`;
   if (stadium === 'inzet') {
     const label = fin ? 'Het onderwerp' : (String(q.tekst).match(/^Video \d+/) || ['Blind inzetten'])[0];
     const tekst = fin ? 'Zet in de app geheim in hoeveel fiches je waagt: van 0 tot alles.' : `Zet blind ${q.inzet_min} tot ${q.inzet_max} fiches in. Je kent alleen de titel.`;
@@ -6040,7 +6067,7 @@ function vraagHTML(q, stadium, groot, foto) {
     <p class="finale-vraag">${esc(vraagTekst(q))}</p>${EXTRA.finale.citaat ? `<p class="finale-citaat">${esc(EXTRA.finale.citaat)}</p>` : ''}${onder()}`;
   const m = groot ? mediaVan(q) : null;
   if (m) return `<div class="groot-vak" id="media">${m.video ? `<video src="${m.url}" playsinline preload="auto"></video>` : `<img src="${m.url}" alt="">`}</div><p class="groot-vraag">${esc(vraagTekst(q))}</p>${onder(q.modus === 'waarde' ? waardeHTML() : '')}`;
-  const kaart = foto ? `<div class="vraag-rij"><div class="foto-kader"><img src="${foto}" alt=""></div>${vraagKaartHTML(q)}</div>` : vraagKaartHTML(q);
+  const kaart = foto ? `<div class="vraag-rij met-dia"><div class="foto-kader is-dia"><img src="${foto}" alt=""></div>${vraagKaartHTML(q)}</div>` : vraagKaartHTML(q);
   return `${kaart}${onder(q.modus === 'waarde' ? waardeHTML() : '')}`;
 }
 
@@ -6059,10 +6086,11 @@ SC.vraag = {
       if (!sc.stapelVoor) { sc.stapelVoor = Object.fromEntries(DUOS.map((d) => [d.id, teamS(d.id).stapel || 0])); sc.fichesVoor = Object.fromEntries(DUOS.map((d) => [d.id, teamS(d.id).fiches])); }
     }
     if (f !== 'open') sc.stadium = 'vraag';
-    const groot = f === 'open' && (sc.stadium === 'verhaal' || (q.ronde === 'Finale' && sc.stadium === 'vraag') || (sc.stadium === 'vraag' && !!mediaVan(q)));
+    const groot = f === 'open' && !!diaRol(q, sc.stadium);
+    laadVooruit(q.id);
     kop(sc); S.focus(null); iedereenThuis();
-    const foto = f !== 'open' && !groot ? fotoVan(q) : null;
-    const layout = (groot ? 'groot:' : 'kaart:') + (f === 'open' ? sc.stadium : 'vraag') + (foto ? ':foto' : '');
+    const foto = f !== 'open' && q.soort !== 'mc' && q.soort !== 'getal' ? fotoVan(q) : null;
+    const layout = (groot ? 'groot:' : 'kaart:') + (f === 'open' ? sc.stadium : 'vraag') + (foto ? ':foto' : '') + (groot && MEDIA[q.id] ? ':video' : '');
     if (sc.layout !== layout) {
       sc.layout = layout;
       laag((groot ? '<div class="waas donker"></div>' : '') + vraagHTML(q, f === 'open' ? sc.stadium : 'vraag', groot, foto));
@@ -6123,8 +6151,8 @@ SC.vraag = {
     const mc = q.soort === 'mc', getal = q.soort === 'getal';
     const goed = DUOS.filter((d) => (inzT(q.id, d.id) || {}).s === 'goed').map((d) => d.id);
     const antwoord = () => {
-      const af = antwoordFoto(q), img = $('#laag .foto-kader img');
-      if (af && img && img.getAttribute('src') !== af) { img.src = af; img.parentElement.classList.add('is-antwoord'); }
+      const af = antwoordFoto(q), kader = $('#laag .foto-kader');
+      if (af && kader && !kader.classList.contains('is-antwoord')) { kader.innerHTML = diaBinnen(q, 'antwoord'); kader.classList.add('is-antwoord'); speelMedia(); }
       if (mc) {
         const o = $('#laag .opties'); if (!o || o.classList.contains('is-onthuld')) return;
         const l = q.letter || String(q.antwoord || '').trim().charAt(0);
@@ -6513,7 +6541,7 @@ async function start() {
   window.SHOW = { naar, S, get STAPPEN() { return STAPPEN; }, SCRIPT, get DB() { return DB; }, get pos() { return pos; }, volgende };
   await naar(Math.max(0, Math.min(begin, STAPPEN.length - 1)), false);
   setInterval(() => { if (!bezig && !document.hidden) ververs(); }, 1000);
-  laadBeeldVooruit();
+  VR.slice(0, 12).forEach(laadDia);
   setInterval(async () => { try { VR = await host('quiz_host_show_vragen'); } catch (e) { /* volgende keer */ } }, 20000);
 }
 
@@ -6544,7 +6572,10 @@ addEventListener('keydown', (e) => {
   else if (k === 'h' || k === 'H' || k === '?') hulp(true);
   else if (k === 'q' || k === 'Q') { KWALITEIT = KWALITEIT === 1 ? 0.6 : 1; pas(); }
 });
-stage.addEventListener('click', (e) => { if (!gestart || e.target.closest('a, button, input, label, form, video')) return; geluid.ontgrendel(); volgende(); });
+stage.addEventListener('click', (e) => {
+  const v = e.target.closest('video'); if (v) { try { v.currentTime = 0; } catch (x) { /* nog niet geladen */ } v.play().catch(() => {}); return; }
+  if (!gestart || e.target.closest('a, button, input, label, form')) return; geluid.ontgrendel(); volgende();
+});
 $('#b-volgende').addEventListener('click', (e) => { e.stopPropagation(); geluid.ontgrendel(); volgende(); });
 $('#b-vorige').addEventListener('click', (e) => { e.stopPropagation(); vorige(); });
 $('#b-geluid').addEventListener('click', (e) => { e.stopPropagation(); wisselGeluid(); });
