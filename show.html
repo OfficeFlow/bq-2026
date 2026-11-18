@@ -479,16 +479,16 @@ button { font: inherit; }
 .finale-blad { position: absolute; left: 70px; right: 70px; top: 148px; display: grid; grid-template-columns: 820px 1fr; gap: 44px; align-items: start; animation: zachtIn .6s both; }
 .fin-verhaal { position: relative; padding: 40px 48px 38px; }
 .fin-verhaal .hoek { width: 34px; height: 34px; }
-.fin-verhaal p { margin: 14px 0 0; font: 500 27px/1.4 var(--tekst); color: var(--inkt); text-wrap: pretty; }
+.fin-verhaal p { margin: 14px 0 0; font: 500 28px/1.4 var(--tekst); color: var(--inkt); text-wrap: pretty; }
 .fin-verhaal p.slot { margin-top: 20px; font-weight: 800; color: #7A1626; }
 .fin-rechts { display: flex; flex-direction: column; gap: 26px; padding-top: 6px; }
 .fin-vraag { margin: 0; font: 900 60px/1.04 var(--tekst); font-stretch: 80%; letter-spacing: -.01em; color: var(--goud-licht); text-shadow: 0 4px 20px rgba(0, 0, 0, .9); text-wrap: balance; }
-.bonnen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-.bon { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 18px 20px; border-radius: 10px; color: var(--inkt); background: linear-gradient(180deg, #FFFBF0, #EBDDBA); box-shadow: 0 8px 22px rgba(0, 0, 0, .5), inset 0 0 0 1px rgba(140, 94, 22, .35); animation: bonIn .6s cubic-bezier(.2, .9, .3, 1.3) both; }
-.bon span { font: 800 28px/1 var(--tekst); }
-.bon b { font: 800 28px/1 var(--tekst); font-variant-numeric: tabular-nums; color: #3A2A10; white-space: nowrap; }
+.bonnen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.bon { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 26px 18px; border-radius: 10px; color: var(--inkt); background: linear-gradient(180deg, #FFFBF0, #EBDDBA); box-shadow: 0 8px 22px rgba(0, 0, 0, .5), inset 0 0 0 1px rgba(140, 94, 22, .35); animation: bonIn .6s cubic-bezier(.2, .9, .3, 1.3) both; }
+.bon span { font: 800 30px/1 var(--tekst); }
+.bon b { font: 800 30px/1 var(--tekst); font-variant-numeric: tabular-nums; color: #3A2A10; white-space: nowrap; }
 .bon.is-open { color: #fff; background: linear-gradient(180deg, #D8344A, #A4182C); box-shadow: 0 0 0 3px var(--goud), 0 0 30px rgba(233, 185, 73, .45), 0 8px 22px rgba(0, 0, 0, .5); }
-.bon.is-open b { color: #fff; font-size: 38px; }
+.bon.is-open b { color: #fff; font-size: 44px; }
 .bon:nth-child(3n+2) { animation-delay: .06s; } .bon:nth-child(3n) { animation-delay: .12s; }
 /* het resultaat van een video: de antwoorddia schermvullend, net als de PowerPoint in presentatiemodus */
 .dia.is-vol { left: 0; top: 0; transform: none; width: 1920px; height: 1080px; border-radius: 0; box-shadow: none; animation: zachtIn .5s both; }
@@ -5982,7 +5982,7 @@ function iedereenThuis() { S.iedereenOpPlek(); S.hostsOpPost(); DUOS.forEach((d)
 SC.lobby = {
   fasen: ['lobby'],
   toon(sc, f, c) {
-    kop(null); S.focus(null); S.hostsWeg(); S.licht('rustig'); S.publiek(0.5); S.orbit(true); S.alleStaat(''); plakkatenWeg(); lampen();
+    kop(null); S.focus(null); S.hostsWeg(); S.licht('rustig'); S.publiek(0.5); S.orbit(true); S.alleStaat(''); plakkatenWeg(); lampen(); zetTafel({}); zetPotLabel(0);
     if (QR_BEELD) S.schermen.qr(QR_BEELD, 'Meld je duo aan', 'Scan de code met je telefoon en tik aan wie jullie zijn.');
     laag(`<div class="waas links"></div><div class="lobby"><span class="gok-label">Aanmelden</span><h1 class="lobby-titel folie">Meld je duo aan</h1>
       <div class="lobby-rij"><div class="lobby-qr porselein"><img src="${QR_SRC}" alt="QR-code naar de quiz-app"></div>
@@ -6015,7 +6015,7 @@ SC.lobby = {
       knop.disabled = true; knop.textContent = 'Bezig met wissen…';
       try {
         await host('quiz_host_reset', { p_zeker: 'RESET' });
-        try { Object.keys(sessionStorage).filter((k) => k.startsWith('bq_rad_') || k === 'bq_show_stap').forEach((k) => sessionStorage.removeItem(k)); } catch (x) { /* geen opslag */ }
+        try { Object.keys(sessionStorage).filter((k) => k.startsWith('bq_rad_') || k.startsWith('bq_show_')).forEach((k) => sessionStorage.removeItem(k)); } catch (x) { /* geen opslag */ }
         location.reload();
       } catch (x) { knop.disabled = false; knop.textContent = 'Wis de oude test'; melding('Wissen lukte niet: ' + x.message); }
     });
@@ -6179,7 +6179,7 @@ function finaleHTML(q) {
   const verhaal = (f.verhaal || []).map((t, k, a) => `<p${k === a.length - 1 ? ' class="slot"' : ''}>${esc(t)}</p>`).join('');
   const bonnen = (f.rekeningen || []).map(([n, b]) => `<div class="bon${b === '?' ? ' is-open' : ''}" data-naam="${esc(n)}"><span>${esc(n)}</span><b>${b === '?' ? '?' : esc(b) + ' Ft'}</b></div>`).join('');
   return `<div class="finale-blad"><section class="fin-verhaal porselein">${HOEKEN}<span class="gok-label">Het verhaal</span>${verhaal}</section>
-    <section class="fin-rechts"><h2 class="fin-vraag">${esc(vraagTekst(q))}</h2><div class="bonnen">${bonnen}</div>${f.citaat ? `<p class="fin-citaat">${esc(f.citaat)}</p>` : ''}</section></div>`;
+    <section class="fin-rechts"><h2 class="fin-vraag">${esc(vraagTekst(q))}</h2><div class="bonnen">${bonnen}</div></section></div>`;
 }
 function vraagHTML(q, stadium, groot, foto) {
   const fin = q.ronde === 'Finale', onder = (extra = '') => `<div class="${groot ? 'groot-onder' : 'onder'}" id="onder">${extra}<span class="pil" id="teller"></span></div>`;
@@ -6414,6 +6414,7 @@ SC.afrekening = {
       tekst = gehaald.length ? `Gehaald: ${namenLijst(gehaald)}. De bank verdubbelt de inzet. De rest is de inzet kwijt.` : 'Niemand haalde 6 goed. Alle inzetten gaan naar de bank.';
     }
     laag(`<div class="waas boven"></div>${middenKaart(`Afrekening ${sc.ronde.toLowerCase()}`, titel, tekst)}<div class="onder" id="onder">${nog ? `<span class="pil">De bank moet nog ${nog} ${nog === 1 ? 'antwoord' : 'antwoorden'} nakijken</span>` : ''}</div>`);
+    S.schermen.tekst(`Afrekening ${sc.ronde.toLowerCase()}`, titel);
     sr(`${titel}. ${tekst}`);
     // de bordjes: de scores, in de sukkelronde daarna op wie je gokte
     DUOS.forEach((d, k) => {
@@ -6452,17 +6453,18 @@ SC.afrekening = {
 };
 
 SC.stand = {
-  fasen: ['stand', 'rang'],
-  async actie(sc, f) { if (f === 'stand' && DB && DB.fase !== 'open') await host('quiz_host_fase', { p_fase: 'stand' }).catch(() => {}); },
+  // één pagina: de titel en de tellers, daarna komen de plaatsen vanzelf (van laatste naar eerste)
+  fasen: ['stand'],
+  async actie(sc) { if (DB && DB.fase !== 'open') await host('quiz_host_fase', { p_fase: 'stand' }).catch(() => {}); },
   toon(sc, f, c) {
     kop(null); S.focus(null); iedereenThuis(); plakkatenWeg(); lampen(); zetTafel({}, { telLaten: true }); labels.wis('rang');
     S.shot('stand', c.nieuw ? 2.2 : 0.8); S.licht('show');
     laag(`<div class="waas boven"></div><h1 class="grote-titel folie">${esc(sc.titel)}</h1><p class="grote-sub">${esc(sc.sub)}</p>`);
     S.schermen.tekst(sc.titel, sc.sub);
     const saldo = (id) => Math.max(0, teamS(id).fiches);
-    DUOS.forEach((d) => tel(d.id).zet(saldo(d.id), c.animeer && f === 'stand'));
+    DUOS.forEach((d) => tel(d.id).zet(saldo(d.id), c.animeer));
     const rang = DUOS.map((d) => d.id).sort((a, b) => saldo(b) - saldo(a) || a - b);
-    if (f === 'stand') { S.alleStaat(''); S.publiek(0.6); if (c.animeer) geluid.open(); sr(sc.titel); return; }
+    S.alleStaat(''); S.publiek(0.6); if (c.animeer) geluid.open();
     const plaatsNr = {}; let vorige = null, p = 0;
     rang.forEach((id, i) => { if (vorige === null || saldo(id) !== saldo(vorige)) p = i + 1; plaatsNr[id] = p; vorige = id; });
     const metRad = sc.rad;
@@ -6473,14 +6475,15 @@ SC.stand = {
       else if (laatste) { S.duoStaat(id, 'sip', 0.2); if (c.animeer) geluid.oeh(); }
       else { S.duoStaat(id, 'ja'); if (c.animeer) geluid.klik(); }
     };
-    if (c.animeer) { S.alleStaat(''); rang.slice().reverse().forEach((id, k) => later(500 + k * 950, () => onthul(id))); later(500 + N * 950 + 3000, () => S.publiek(0.8)); }
+    if (c.animeer) { rang.slice().reverse().forEach((id, k) => later(2200 + k * 950, () => onthul(id))); later(2200 + N * 950 + 3000, () => S.publiek(0.8)); }
     else rang.forEach((id) => onthul(id));
     sr('De stand: ' + rang.map((id) => `${DUO(id).naam} ${saldo(id)}`).join(', '));
   },
 };
 
 SC.rad = {
-  fasen: ['loop', 'draai', 'effect'],
+  // loop: het duo loopt naar het rad. draai: draaien, de uitslag en meteen het effect (fiches, shotjes, terug naar tafel).
+  fasen: ['loop', 'draai'],
   sleutel: (sc) => 'bq_rad_' + sc.key,
   geheugen(sc) { try { return JSON.parse(sessie.get(this.sleutel(sc)) || 'null'); } catch (e) { return null; } },
   bewaar(sc, p) { sessie.set(this.sleutel(sc), JSON.stringify(p)); },
@@ -6516,26 +6519,28 @@ SC.rad = {
       sr(`Rad van fortuin. Aan de beurt: ${d.naam}.`);
       return;
     }
-    S.iedereenOpPlek(); S.zetBijRad(duoId);
-    if (f === 'draai') {
-      zetTafel({}); S.shot('rad', 0.8); laag('');
-      if (mem) { S.rad.zetIndex(mem.uitkomst); this.kaart(mem); if (!mem.geboekt) this.boekNu(sc, mem); return; }
-      if (!c.animeer) { laag(middenKaart('Rad van fortuin', d.naam, 'Druk op spatie om te draaien.')); sc.wachtOpDraai = true; return; }
-      this.draai(sc, duoId);
+    // draai
+    if (mem) {
+      // al gedraaid (terugbladeren of herladen): de uitslag en de eindstand, het duo zit weer aan tafel
+      S.rad.zetIndex(mem.uitkomst); this.kaart(mem); if (!mem.geboekt) this.boekNu(sc, mem);
+      zetTafel({}); S.iedereenOpPlek(); S.focus(null); S.shot('totaal', 1); S.licht('show');
       return;
     }
-    // effect: de fiches gaan echt over de tafel, het duo loopt terug
-    S.shot('totaal', c.animeer ? 2 : 1); S.licht('show');
-    if (!mem) { zetTafel({}); S.iedereenOpPlek(); S.focus(null); laag(middenKaart('Rad van fortuin', 'Nog niet gedraaid', 'Ga een stap terug en druk op spatie.')); return; }
-    const s = RAD[mem.uitkomst];
-    laag(`<div class="uitslag porselein">${HOEKEN}<span class="gok-label">Het rad zegt</span><h2>${esc(s.tekst)}</h2><p>${esc(this.uitslagTekst(mem))}</p></div>`);
-    if (!c.animeer) { zetTafel({}); S.iedereenOpPlek(); S.focus(null); return; }
+    S.iedereenOpPlek(); S.zetBijRad(duoId);
+    zetTafel({}); S.shot('rad', 0.8); laag('');
+    if (!c.animeer) { laag(middenKaart('Rad van fortuin', d.naam, 'Druk op spatie om te draaien.')); sc.wachtOpDraai = true; return; }
+    this.draai(sc, duoId);
+  },
+  // het effect van de uitslag: de fiches gaan echt over de tafel, het duo loopt terug
+  effect(sc, mem) {
+    const duoId = mem.duo, s = RAD[mem.uitkomst];
+    S.shot('totaal', 2); S.licht('show');
     const g = geldig();
     // laat de stapels eerst zien zoals ze voor het rad waren
     zetTafel({}, { telLaten: true });
     S.zetFiches(duoId, mem.voor); tel(duoId).zet(mem.voor);
     if (mem.van && DUO(mem.van)) { S.zetFiches(mem.van, mem.vanVoor); tel(mem.van).zet(mem.vanVoor); }
-    const klaar = g(() => { zetTafel({}); DUOS.forEach((x) => tel(x.id).zet(teamS(x.id).fiches, true)); });
+    const klaar = g(() => { zetTafel({}); DUOS.forEach((x) => tel(x.id).zet(Math.max(0, teamS(x.id).fiches), true)); });
     if (s.steel && mem.van && mem.gestolen) {
       S.focus([duoId, mem.van], { dim: 0.6 });
       later(900, () => { S.duoStaat(mem.van, 'schrik'); geluid.oeh(); });
@@ -6573,6 +6578,7 @@ SC.rad = {
       else { geluid.oeh(); }
       S.duoStaat(duoId, s.plus || (s.steel && plan.van) ? 'juich' : s.shot ? 'schrik' : 'sip', 0.15);
       later(2600, () => { S.licht('show'); S.publiek(1); });
+      later(3200, () => this.effect(sc, plan));
     })).catch(() => { blokRad = false; }));
     // meteen boeken: een herladen pagina draait niet opnieuw
     this.boekNu(sc, plan);
@@ -6601,7 +6607,7 @@ SC.eind = {
     kop(null); S.focus(null); iedereenThuis(); plakkatenWeg(); lampen(); zetTafel({}); labels.wis('rang');
     S.shot('totaal', c.animeer ? 3 : 1.2); S.licht(c.animeer ? 'feest' : 'show'); S.publiek(2.4);
     laag(`<div class="waas midden"></div>${middenKaart('Einduitslag', 'De fiches zijn geteld', 'Wie heeft de bank laten springen? De kamelenrace beslist.')}<div class="onder"><a class="knop-goud" href="./?finale">Start de kamelenrace</a></div>`);
-    S.alleStaat('zwaai');
+    S.alleStaat('zwaai'); S.schermen.tekst('Einduitslag', 'De fiches zijn geteld');
     if (c.animeer) { geluid.boom(); flits(); S.pyro('vlam'); S.confettiKanon(380); geluid.juich(4, 1.2); }
     sr('De fiches zijn geteld. Start de kamelenrace.');
   },
@@ -6699,7 +6705,7 @@ async function naar(n, vooruit = false) {
     pos = m;
     impl.toon(sc, f, { nieuw, animeer: vooruit });
     $('#voortgang').textContent = `${pos + 1} / ${STAPPEN.length}`;
-    sessie.set('bq_show_stap', String(pos));
+    sessie.set('bq_show_stap', String(pos)); sessie.set('bq_show_sleutel', STAPPEN[pos].i + ':' + STAPPEN[pos].f);
   } finally { bezig = false; }
 }
 function volgende() {
@@ -6741,6 +6747,9 @@ async function start() {
   // Hervatten na herladen, maar een lege quiz (na RESET) begint altijd bij het aanmelden.
   const leeg = !DB.inz.length && !DB.vraag_id;
   let begin = leeg ? 0 : +sessie.get('bq_show_stap') || 0;
+  // liever de scène en fase onthouden dan het stapnummer: dat blijft kloppen als er stappen bij of af komen
+  const sleutel = leeg ? null : sessie.get('bq_show_sleutel');
+  if (sleutel) { const [si, sf] = sleutel.split(':'); let k = STAPPEN.findIndex((s) => s.i === +si && s.f === sf); if (k < 0) k = STAPPEN.findIndex((s) => s.i === +si); if (k >= 0) begin = k; }
   if (!leeg && !(begin > 0 && begin < STAPPEN.length) && DB.vraag_id) {
     const i = SCRIPT.findIndex((sc) => sc.vid === DB.vraag_id && (sc.type === 'vraag' || sc.type === 'gok'));
     if (i >= 0) begin = STAPPEN.findIndex((s) => s.i === i);

@@ -340,14 +340,14 @@ function tekenTeam() {
     } else if (v.soort === "sukkel" && d.fase === "open") {
       h += `<p class="sub">Kies een duo (niet jezelf) en je inzet. Goed gegokt is inzet verdubbeld, mis is inzet kwijt. Het slechtste duo van de ronde betaalt zelf 3 fiches aan de bank.</p>
         <div class="opties">${(d.anderen || []).map((t) => `<button class="optie ${gekozen === String(t.id) ? "gekozen" : ""}" data-o="${t.id}"><b>${t.id}</b>${esc(t.naam)}</button>`).join("")}</div>
-        <div class="inzet">${range(v.inzet_min, v.inzet_max).map((n) => `<button data-i="${n}" class="${inzetKeuze === n ? "gekozen" : ""}">${n}</button>`).join("")}</div>
+        <div class="inzet">${range(Math.min(v.inzet_min, Math.max(d.fiches, 0)), Math.min(v.inzet_max, Math.max(d.fiches, 0))).map((n) => `<button data-i="${n}" class="${inzetKeuze === n ? "gekozen" : ""}">${n}</button>`).join("")}</div>
         <button class="breed" id="stuur" ${bezig ? "disabled" : ""}>Verstuur</button>${fout ? `<div class="fouttekst">${esc(fout)}</div>` : ""}`;
     } else if (d.fase === "open" && !(m && m.antwoord && !m.opnieuw)) {
       const vooraf = v.inzet_vooraf && !uit, vast = !!m;
       if (vooraf && !vast) {
         h += `<p class="sub">${v.allin ? "All-in: hoeveel fiches zet je in? Goed is verdubbeld, fout is kwijt." : v.soort === "inzet" ? "Gehaald is inzet verdubbeld, niet gehaald is inzet kwijt." : "Zet eerst in. Goed is inzet verdubbeld, fout is inzet kwijt."}</p>`;
         if (v.allin) h += `<input type="number" id="allin" inputmode="numeric" min="0" max="${v.inzet_max}" value="${inzetKeuze ?? ""}" placeholder="0 t/m ${v.inzet_max}" style="margin-top:12px">`;
-        else h += `<div class="inzet">${range(v.inzet_min, v.inzet_max).map((n) => `<button data-i="${n}" class="${inzetKeuze === n ? "gekozen" : ""}">${n}</button>`).join("")}</div>`;
+        else h += `<div class="inzet">${range(Math.min(v.inzet_min, Math.max(d.fiches, 0)), Math.min(v.inzet_max, Math.max(d.fiches, 0))).map((n) => `<button data-i="${n}" class="${inzetKeuze === n ? "gekozen" : ""}">${n}</button>`).join("")}</div>`;
         h += `<button class="breed" id="zetvast" ${bezig ? "disabled" : ""}>Inzet vastzetten</button>`;
       } else {
         if (vooraf) h += `<p class="sub">Inzet staat vast: <b>${m.inzet}</b> ${m.inzet === 1 ? "fiche" : "fiches"}.</p>`;
