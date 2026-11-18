@@ -38,6 +38,13 @@
   .optie { display: flex; gap: 12px; align-items: center; text-align: left; background: #0e1930; color: #fff; border: 2px solid rgba(255,255,255,.2); font-weight: 600; }
   .optie b { background: var(--goud); color: var(--blauw); border-radius: 50%; width: 34px; height: 34px; display: grid; place-items: center; flex: none; }
   .optie.gekozen { border-color: var(--goud); background: rgba(233,185,73,.18); }
+  /* meerkeuze: zelfde kleuren als op het grote scherm */
+  .opties.mc { grid-template-columns: 1fr 1fr; }
+  .opties.mc .optie { min-height: 84px; border: 3px solid transparent; font-size: 17px; }
+  .optie.mc-A { background: #C8283F; } .optie.mc-B { background: #2B62CF; } .optie.mc-C { background: #E9A91C; color: #2B1906; } .optie.mc-D { background: #1C8F62; }
+  .opties.mc .optie b { background: #fff; color: #0e1930; }
+  .opties.mc .optie.gekozen { border-color: #fff; box-shadow: 0 0 0 3px var(--goud), 0 6px 18px rgba(0,0,0,.35); transform: scale(1.03); }
+  .opties.mc:has(.gekozen) .optie:not(.gekozen) { opacity: .55; }
   .namen { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
   .naam { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; background: #0e1930; color: #fff; border: 2px solid rgba(255,255,255,.2); font-size: 19px; padding: 14px 14px; }
   .naam small { font-size: 12px; font-weight: 600; color: var(--licht); opacity: .8; }
@@ -348,7 +355,7 @@ function tekenTeam() {
         if (v.modus === "race" && !uit) h += `<p class="sub">De race: eerste goede 3 fiches, tweede 2, daarna 1. Eén poging.</p>`;
         if (v.modus === "pot" && !uit) h += `<p class="sub">De pot: je legt 1 fiche in. Wie het dichtst zit, pakt de pot.</p>`;
         if (v.modus === "bank" && d.bank && !uit) h += `<p class="sub">Je stapel: <b>${d.bank.stapel}</b>. Goed levert nu ${d.bank.reeks + 1} op, fout en je stapel is weg.</p>`;
-        if (v.soort === "mc") h += `<div class="opties">${v.opties.map(([l, t]) => `<button class="optie ${gekozen === l ? "gekozen" : ""}" data-o="${l}"><b>${l}</b>${esc(t)}</button>`).join("")}</div>`;
+        if (v.soort === "mc") h += `<div class="opties mc">${v.opties.map(([l, t]) => `<button class="optie mc-${l} ${gekozen === l ? "gekozen" : ""}" data-o="${l}"><b>${l}</b>${esc(t)}</button>`).join("")}</div>`;
         else h += `<input type="${v.soort === "getal" ? "number" : "text"}" id="antw" ${v.soort === "getal" ? 'inputmode="decimal"' : ""} placeholder="Jullie antwoord" value="${esc(tekst)}" autocomplete="off" style="margin-top:12px">`;
         if (!vooraf && !uit && v.inzet_max > 0) h += `<p class="sub">Dubbel of niks?</p><div class="inzet"><button data-i="0" class="${!inzetKeuze ? "gekozen" : ""}">Gewoon</button><button data-i="1" class="${inzetKeuze === 1 ? "gekozen" : ""}">Dubbel ✗</button></div>`;
         h += `<button class="breed" id="stuur" ${bezig ? "disabled" : ""}>Verstuur</button>`;

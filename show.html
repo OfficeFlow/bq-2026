@@ -455,6 +455,25 @@ button { font: inherit; }
 .ronde-titel { font-size: 96px; font-stretch: 72%; line-height: 1.02; }
 .ob-naam { font-stretch: 80%; }
 .uitslag h2 { font-size: 80px; font-stretch: 80%; white-space: normal; text-wrap: balance; }
+#roep { display: none !important; }
+
+/* meerkeuze: elke letter een eigen kleur (zelfde kleuren als op de telefoons) */
+.optie[data-l="A"] { --oa: #E2475A; --ob: #A82535; }
+.optie[data-l="B"] { --oa: #3D7FEA; --ob: #224FAE; }
+.optie[data-l="C"] { --oa: #F4BE34; --ob: #C88C0C; }
+.optie[data-l="D"] { --oa: #28B07B; --ob: #157A50; }
+.kaart .opties .optie { background: linear-gradient(180deg, var(--oa), var(--ob)); color: #fff; box-shadow: 0 8px 18px rgba(0, 0, 0, .25); }
+.kaart .opties .optie[data-l="C"] { color: #2B1906; }
+.kaart .opties .optie .ol { background: #fff; color: var(--ob); box-shadow: none; }
+.kaart .opties .optie.is-goed { background: linear-gradient(180deg, var(--oa), var(--ob)); box-shadow: 0 0 0 5px #fff, 0 0 0 9px var(--goud), 0 0 50px rgba(233, 185, 73, .8); transform: translateY(-6px) scale(1.04); }
+.kaart .opties.is-onthuld .optie:not(.is-goed) { background: linear-gradient(180deg, #59625F, #3B4341); color: rgba(255, 255, 255, .75); }
+
+/* naast de dia: alleen het antwoord of de schattingen, niet nog eens de vraag */
+.kaart.is-naast { align-items: center; justify-content: center; gap: 22px; padding: 30px 40px; }
+.kaart.is-naast .antwoord-slot { min-height: 120px; width: 100%; }
+.kaart.is-naast .antwoord-slot:empty::before { content: "?"; font: 900 120px/1 var(--tekst); color: rgba(14, 37, 48, .14); }
+.kaart.is-pot.is-naast { justify-content: flex-start; padding-top: 34px; }
+.kaart.is-pot.is-naast .getallijn { width: 100%; }
 </style></head><body><div id="podium"><div id="stage">
   <canvas id="gl" aria-hidden="true"></canvas>
   <div id="labels" aria-hidden="true"></div>
@@ -5675,8 +5694,11 @@ function maakTelbord(d) {
 }
 const GEEN = { zet() {}, klaar() {}, zicht() {}, uit() {} };
 const tel = (id) => telborden.get(id) || GEEN;
-function vraagKaartHTML(q) {
+function vraagKaartHTML(q, metDia) {
   const mc = q.soort === 'mc', getal = q.soort === 'getal';
+  if (metDia && !mc) return getal
+    ? `<div class="kaart porselein is-pot is-naast">${HOEKEN}<span class="gok-label">De schattingen</span><div class="getallijn" id="lijn"></div></div>`
+    : `<div class="kaart porselein is-open-vraag is-naast">${HOEKEN}<span class="gok-label">Het antwoord</span><div class="antwoord-slot"></div></div>`;
   return `<div class="kaart porselein ${mc ? 'is-mc' : getal ? 'is-pot' : 'is-open-vraag'}">${HOEKEN}<p class="vraagtekst">${esc(vraagTekst(q))}</p>
     ${mc ? `<div class="opties">${(q.opties || []).map(([l, t]) => `<div class="optie" data-l="${esc(l)}"><span class="ol">${esc(l)}</span><span class="ot">${esc(t)}</span><span class="keuze"></span></div>`).join('')}</div>`
       : getal ? '<div class="getallijn" id="lijn"></div>' : '<div class="antwoord-slot"></div>'}</div>`;
@@ -6042,11 +6064,13 @@ SC.ronde = {
 
 async function openVraag(q) {
   if (!DB || !q) return;
-  if (DB.vraag_id === q.id && (DB.fase === 'open' || DB.fase === 'dicht')) {
-    if (q.modus === 'waarde' && DB.fase === 'open' && DB.waarde !== 3 && !inzVan(q.id).length) await host('quiz_host_waarde', { p_waarde: 3 });
+  const leeg = !inzVan(q.id).length;
+  if (DB.vraag_id === q.id && DB.fase === 'open') {
+    // al open zonder antwoorden: de BN'ers beginnen weer bij stap 1
+    if (q.modus === 'waarde' && DB.waarde !== 3 && leeg) await host('quiz_host_waarde', { p_waarde: 3 });
     return;
   }
-  if (q.gesloten || inzVan(q.id).length) return;
+  if (!leeg) return;   // al gespeeld met antwoorden: niet opnieuw openen
   if (DB.fase === 'open' && DB.vraag_id) await host('quiz_host_fase', { p_fase: 'dicht' });
   await host('quiz_host_open', { p_vraag: q.id });
 }
@@ -6075,7 +6099,7 @@ SC.gok = {
       zetTafel({ q, dek: true }); lampen();
       DUOS.forEach((d) => { if (ingezet(inzT(q.id, d.id))) lamp(d.id, 'ingezet'); S.duoStaat(d.id, ingezet(inzT(q.id, d.id)) ? '' : 'denkt'); });
       teller(q, 'inzet'); S.licht('rustig');
-      if (c.animeer) { roep('Inzetten maar'); geluid.open(); }
+      if (c.animeer) geluid.open();
       controleer(sc, alleIngezet);
       sr(`${r.gok.naam}. Zet nu in via de app.`);
       return;
@@ -6083,7 +6107,7 @@ SC.gok = {
     lampen(); S.alleStaat(''); onderPil('Alle inzetten liggen op tafel'); S.licht('show');
     if (sukkel) DUOS.forEach((d) => { const x = inzT(q.id, d.id); if (x && x.a) plakkaat(d.id, { tekst: plaatTekst(q, x), stil: !c.animeer }); });
     if (!c.animeer) { zetTafel({ q }); return; }
-    zetTafel({ q, dek: true }); roep('Niets gaat meer'); geluid.dicht();
+    zetTafel({ q, dek: true }); geluid.dicht();
     later(900, () => inzettenNaarCirkel(q, null, null));
   },
   update(sc, f, oud) { if (f !== 'open') return; const q = vraag(sc.vid); aankomst(q, oud); teller(q, 'inzet'); controleer(sc, alleIngezet); },
@@ -6106,7 +6130,7 @@ function vraagHTML(q, stadium, groot, foto) {
     <p class="finale-vraag">${esc(vraagTekst(q))}</p>${EXTRA.finale.citaat ? `<p class="finale-citaat">${esc(EXTRA.finale.citaat)}</p>` : ''}${onder()}`;
   const m = groot ? mediaVan(q) : null;
   if (m) return `<div class="groot-vak" id="media">${m.video ? `<video src="${m.url}" playsinline preload="auto"></video>` : `<img src="${m.url}" alt="">`}</div><p class="groot-vraag">${esc(vraagTekst(q))}</p>${onder(q.modus === 'waarde' ? waardeHTML() : '')}`;
-  const kaart = foto ? `<div class="vraag-rij met-dia"><div class="foto-kader is-dia"><img src="${foto}" alt=""></div>${vraagKaartHTML(q)}</div>` : vraagKaartHTML(q);
+  const kaart = foto ? `<div class="vraag-rij met-dia"><div class="foto-kader is-dia"><img src="${foto}" alt=""></div>${vraagKaartHTML(q, true)}</div>` : vraagKaartHTML(q);
   return `${kaart}${onder(q.modus === 'waarde' ? waardeHTML() : '')}`;
 }
 
@@ -6125,11 +6149,12 @@ SC.vraag = {
       if (!sc.stapelVoor) { sc.stapelVoor = Object.fromEntries(DUOS.map((d) => [d.id, teamS(d.id).stapel || 0])); sc.fichesVoor = Object.fromEntries(DUOS.map((d) => [d.id, teamS(d.id).fiches])); }
     }
     if (f !== 'open') sc.stadium = 'vraag';
-    const groot = f === 'open' && !!diaRol(q, sc.stadium);
+    const mcKaart = q.soort === 'mc' && !(DIA[q.id] && DIA[q.id].vlak);
+    const groot = f === 'open' && !mcKaart && !!diaRol(q, sc.stadium);
     laadVooruit(q.id);
     kop(sc); S.focus(null); iedereenThuis();
-    const foto = f !== 'open' && q.soort !== 'mc' && q.soort !== 'getal' ? fotoVan(q) : null;
-    const layout = (groot ? 'groot:' : 'kaart:') + (f === 'open' ? sc.stadium : 'vraag') + (foto ? ':foto' : '') + (groot && MEDIA[q.id] ? ':video' : '');
+    const foto = f !== 'open' && q.soort !== 'mc' ? fotoVan(q) : null;
+    const layout = mcKaart ? 'kaart:mc' : (groot ? 'groot:' : 'kaart:') + (f === 'open' ? sc.stadium : 'vraag') + (foto ? ':foto' : '') + (groot && MEDIA[q.id] ? ':video' : '');
     if (sc.layout !== layout) {
       sc.layout = layout;
       laag((groot ? '<div class="waas donker"></div>' : '') + vraagHTML(q, f === 'open' ? sc.stadium : 'vraag', groot, foto));
@@ -6145,7 +6170,7 @@ SC.vraag = {
       DUOS.forEach((d) => { const x = inzT(q.id, d.id); if (ingezet(x)) lamp(d.id, 'ingezet'); S.duoStaat(d.id, geantwoord(q, x) ? '' : 'denkt'); });
       teller(q, sc.stadium); S.licht(groot ? 'rustig' : 'rustig'); S.publiek(0.3);
       if (pot) S.pot.zet(potAantal(q));
-      if (c.animeer) { roep(sc.stadium === 'inzet' ? 'Inzetten maar' : 'Antwoorden maar'); geluid.open(); }
+      if (c.animeer) geluid.open();
       if (c.nieuw && wilBeeld(q) && !MEDIA[q.id]) melding('Geen video voor deze vraag. Klik rechtsonder op het mapje en kies de map met je video\'s.');
       sr(sc.stadium === 'vraag' ? vraagTekst(q) : `${titelVan(q)}. Zet eerst in.`);
       controleer(sc, (qq) => sc.stadium === 'vraag' && qq.modus !== 'waarde' && alleGeantwoord(qq));
@@ -6159,7 +6184,7 @@ SC.vraag = {
       S.licht('spanning');
       if (!c.animeer) { plaques(false, true); zetTafel(ctx); S.alleStaat(''); return; }
       DUOS.forEach((d, k) => later(260 + k * 140, () => { const x = inzT(q.id, d.id); plakkaat(d.id, { tekst: plaatTekst(q, x) }); geluid.flap(); }));
-      zetTafel({ ...ctx, dek: true }); roep('Niets gaat meer'); geluid.dicht();
+      zetTafel({ ...ctx, dek: true }); geluid.dicht();
       S.alleStaat('oeh'); later(1500, () => S.alleStaat(''));
       later(700, () => inzettenNaarCirkel(q, gok, sc));
       return;
