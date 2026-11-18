@@ -33,6 +33,10 @@
   .nk { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.12); }
   .nk-a { font-size: 20px; font-weight: 700; word-break: break-word; }
   .nk .rij button { padding: 14px 18px; font-size: 18px; }
+  .kaart.duel { border: 2px solid var(--rood); box-shadow: 0 0 0 3px rgba(200,16,46,.25), 0 10px 30px rgba(0,0,0,.35); }
+  .kaart.steel { border: 2px solid var(--goud); }
+  button.steelknop { background: linear-gradient(180deg, #2A1420, #1A0D14); color: var(--licht); border: 2px dashed rgba(233,185,73,.7); }
+  button:disabled { opacity: .5; cursor: default; }
   button.stil { background: rgba(255,255,255,.1); color: #fff; } button.klein { padding: 8px 10px; font-size: 14px; border-radius: 9px; }
   .opties { display: grid; gap: 10px; margin-top: 12px; }
   .optie { display: flex; gap: 12px; align-items: center; text-align: left; background: #0e1930; color: #fff; border: 2px solid rgba(255,255,255,.2); font-weight: 600; }
@@ -250,6 +254,7 @@ function standStart() {
 
 /* ================= TEAM ================= */
 let token = ls.get("bq_token"), T = null, toon = null, sig = "", gekozen = null, inzetKeuze = null, tekst = "", fout = "", bezig = false, naamTik = "", teamGestart = false;
+let steelOpen = false, steelDoel = null, duelTekst = "";
 
 async function teamStart() {
   if (!token) return kiesTeam();
@@ -311,6 +316,7 @@ async function pollTeam() {
     const s = JSON.stringify(d);
     const andereVraag = !T || (T.vraag && T.vraag.id) !== (d.vraag && d.vraag.id) || T.waarde !== d.waarde;
     if (andereVraag) { gekozen = null; inzetKeuze = null; tekst = ""; fout = ""; }
+    if (!T || (T.duel && T.duel.id) !== (d.duel && d.duel.id)) duelTekst = "";
     if (toon === null || d.fase !== "open") { if (toon !== null && d.fiches > toon) munten(d.fiches - toon); toon = d.fiches; }
     d.toon = toon;
     T = d; if (s !== sig) { sig = s; tekenTeam(); }
@@ -323,7 +329,26 @@ function tekenTeam() {
   const uit = !d.blut_koop && !!(d.uit || (d.fase !== "open" && (d.toon ?? d.fiches) <= 0));
   if (d.blut_koop) { if (d.fiches <= 0) h += `<div class="kaart midden" style="border-color:var(--rood)"><div class="label">Blut</div><h1>Geen fiches meer</h1><p class="sub">Koop 3 fiches. Prijs: één shotje, nu meteen.</p><button class="breed rood" id="koop">Koop 3 fiches 🥃</button></div>`; }
   else if (uit) h += `<div class="kaart midden" style="border-color:var(--rood);padding:12px 14px"><div class="label">Blut · uit de strijd</div><p class="sub" style="margin:6px 0 0">Geen fiches meer, dus jullie kunnen niet meer winnen. Jullie spelen wel gewoon mee: een fout antwoord blijft 1 shotje.</p></div>`;
-  if (d.fase === "stand" && d.stand) {
+  // het duel (steelkaart): als jullie meedoen, staat het bovenaan
+  const du = d.duel, inDuel = !!du && (du.rol === "van" || du.rol === "naar"), duelNu = inDuel && du.fase === "open";
+  if (duelNu) {
+    h += `<div class="kaart duel"><div class="label">Duel · steelkaart</div><h1>${du.rol === "van" ? "Jullie dagen " + esc(du.naar) + " uit" : esc(du.van) + " dagen jullie uit"}</h1>`;
+    if (du.mijn == null) h += `<p class="sub">Kijk naar het scherm en reken de som uit. Eén poging, geen rekenmachine. Het eerste goede antwoord wint 2 fiches.</p>
+      <input type="number" id="duelantw" inputmode="numeric" placeholder="Jullie antwoord" value="${esc(duelTekst)}" autocomplete="off" style="margin-top:12px"><button class="breed rood" id="duelstuur" ${bezig ? "disabled" : ""}>Verstuur</button>`;
+    else h += `<p class="sub">Jullie antwoord:</p><div class="groot">${esc(du.mijn)}</div><p class="sub midden">Kijk naar het scherm voor de uitslag.</p>`;
+    if (fout) h += `<div class="fouttekst">${esc(fout)}</div>`;
+    h += `</div>`;
+  } else if (inDuel && du.fase === "klaar") {
+    h += du.ik_won ? `<div class="kaart midden duel"><div class="label">Duel</div><div class="groot goed">Gewonnen!</div><p class="sub midden">+${du.bedrag} ${du.bedrag === 1 ? "fiche" : "fiches"}</p></div>`
+      : du.winnaar ? `<div class="kaart midden duel"><div class="label">Duel</div><div class="groot fout">Verloren</div><p class="sub midden">−${du.bedrag} ${du.bedrag === 1 ? "fiche" : "fiches"}</p></div>`
+      : `<div class="kaart midden duel"><div class="label">Duel</div><h1>Niemand won</h1><p class="sub midden">Er gaan geen fiches over.</p></div>`;
+  } else if (inDuel && du.fase === "wacht") {
+    h += `<div class="kaart midden duel"><div class="label">Duel</div><p class="sub" style="margin:6px 0 0">${du.rol === "van" ? "Jullie duel tegen " + esc(du.naar) + " begint" : esc(du.van) + " dagen jullie uit. Het duel begint"} na deze vraag. Hou het scherm in de gaten.</p></div>`;
+  } else if (du && du.fase !== "klaar") {
+    h += `<div class="kaart midden"><p class="sub" style="margin:0">Duel: ${esc(du.van)} tegen ${esc(du.naar)}${du.fase === "open" ? ". Kijk naar het scherm." : ", na deze vraag."}</p></div>`;
+  }
+  if (duelNu) { /* tijdens het duel alleen het duel */ }
+  else if (d.fase === "stand" && d.stand) {
     h += `<div class="kaart"><div class="label">Tussenstand</div><h1>De stand</h1><div class="stand">${d.stand.map((r, i) => `<div class="${r.ik ? "ik" : ""}"><span>${i + 1}. ${esc(r.naam)}</span><b>${r.fiches}</b></div>`).join("")}</div></div>`;
   } else if (!v || d.fase === "wacht") {
     h += `<div class="kaart midden"><div class="label">${esc(d.team)}</div><h1>Even wachten</h1><p class="sub">De bank zet zo de volgende vraag open. Blijf op deze pagina.</p></div>`;
@@ -380,6 +405,16 @@ function tekenTeam() {
     }
     h += `</div>`;
   }
+  if (d.steel && d.steel.kaart && !duelNu) {
+    if (steelOpen) {
+      const doelen = d.steel.doelen || [];
+      h += `<div class="kaart steel"><div class="label">Steelkaart</div><h1>Wie dagen jullie uit?</h1><p class="sub">Op het scherm komt een lastige som. Het eerste goede antwoord wint. Winnen jullie, dan pakken jullie 2 fiches. Verliezen jullie, dan betalen jullie er 2. De kaart kan maar één keer.</p>
+        ${doelen.length ? `<div class="opties">${doelen.map((t) => `<button class="optie ${steelDoel === t.id ? "gekozen" : ""}" data-doel="${t.id}"><b>${t.id}</b>${esc(t.naam)}</button>`).join("")}</div>` : `<p class="sub">Geen enkel duo heeft nu 2 fiches of meer.</p>`}
+        <button class="breed rood" id="steelgo" ${bezig || !steelDoel || !d.steel.kan ? "disabled" : ""}>Daag uit</button><button class="breed stil" id="steelweg">Annuleer</button>${!d.steel.kan && d.steel.reden ? `<p class="sub midden"><small>${esc(d.steel.reden)}</small></p>` : ""}${fout ? `<div class="fouttekst">${esc(fout)}</div>` : ""}</div>`;
+    } else {
+      h += `<button class="breed steelknop" id="steel" ${d.steel.kan ? "" : "disabled"}>🃏 Steelkaart: daag een duo uit</button>${!d.steel.kan && d.steel.reden ? `<p class="sub midden"><small>${esc(d.steel.reden)}</small></p>` : ""}`;
+    }
+  }
   h += `<p class="midden"><small>${esc(d.team)}${d.shots && d.shots.max > 0 && d.shots.totaal > 0 ? " · 🥃 " + d.shots.totaal + (d.shots.totaal === 1 ? " shotje" : " shotjes") : ""} · verlaat deze pagina niet tijdens een vraag</small></p>`;
   app.innerHTML = h;
   const a = document.getElementById("antw"); if (a) a.oninput = () => { tekst = a.value; };
@@ -394,6 +429,12 @@ function tekenTeam() {
     if (v.soort === "sukkel" && !inzetKeuze) { fout = "Kies eerst je inzet."; return tekenTeam(); } doe("quiz_stuur", { p_token: token, p_vraag: v.id, p_antwoord: antw, p_inzet: inzetKeuze || 0 }); };
   const bk = document.getElementById("bank"); if (bk) bk.onclick = () => doe("quiz_bank", { p_token: token });
   const kp = document.getElementById("koop"); if (kp) kp.onclick = () => doe("quiz_koop", { p_token: token });
+  const sk = document.getElementById("steel"); if (sk) sk.onclick = () => { steelOpen = true; steelDoel = null; fout = ""; tekenTeam(); };
+  app.querySelectorAll("[data-doel]").forEach((b) => b.onclick = () => { steelDoel = +b.dataset.doel; tekenTeam(); });
+  const sw = document.getElementById("steelweg"); if (sw) sw.onclick = () => { steelOpen = false; steelDoel = null; fout = ""; tekenTeam(); };
+  const sg = document.getElementById("steelgo"); if (sg) sg.onclick = () => { if (!steelDoel) return; doe("quiz_duel_start", { p_token: token, p_doel: steelDoel }).then(() => { if (!fout) { steelOpen = false; steelDoel = null; tekenTeam(); } }); };
+  const da = document.getElementById("duelantw"); if (da) da.oninput = () => { duelTekst = da.value; };
+  const ds = document.getElementById("duelstuur"); if (ds) ds.onclick = () => { if (!duelTekst.trim()) { fout = "Vul eerst een getal in."; return tekenTeam(); } doe("quiz_duel_antwoord", { p_token: token, p_antwoord: duelTekst.trim() }); };
   if (actief) { const el = document.getElementById(actief); if (el) { el.focus(); const n = el.value.length; try { el.setSelectionRange(n, n); } catch {} } }
 }
 const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);

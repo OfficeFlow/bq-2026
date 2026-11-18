@@ -520,6 +520,27 @@ button { font: inherit; }
 .huisregels li { counter-increment: r; display: grid; grid-template-columns: 52px 1fr; gap: 18px; align-items: start; font: 600 30px/1.3 var(--tekst); color: var(--inkt); }
 .huisregels li::before { content: counter(r); width: 52px; height: 52px; margin-top: -6px; border-radius: 50%; display: grid; place-items: center; font: 800 26px/1 var(--tekst); color: var(--inkt); background: radial-gradient(circle at 40% 35%, #FFF1C6, #E9B949 58%, #A8741F); box-shadow: 0 2px 0 rgba(0, 0, 0, .3); }
 @media (prefers-reduced-motion: reduce) { .welkom, .huisregels { animation: none !important; } }
+
+/* het duel (steelkaart) */
+.duel { position: absolute; left: 300px; right: 300px; top: 118px; padding: 40px 64px 36px; display: grid; justify-items: center; gap: 14px; text-align: center; animation: kaartIn .85s cubic-bezier(.2, .9, .25, 1.12) both; }
+.duel .hoek { width: 42px; height: 42px; }
+.duel h2 { margin: 4px 0 0; font: 900 58px/1.05 var(--show); font-stretch: 80%; color: var(--inkt); text-wrap: balance; }
+.duel-som { display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; gap: 0 18px; margin: 6px 0 0; font: 900 132px/1 var(--tekst); font-variant-numeric: tabular-nums; letter-spacing: -.02em; color: #7A1626; }
+.duel-uit { color: #157A50; }
+.duel-regel { margin: 0; font: 700 28px/1.3 var(--tekst); color: var(--inkt); }
+.duel-regel.is-uitslag { font-size: 36px; color: #7A1626; }
+.duel-stand { width: 100%; display: grid; grid-template-columns: 1fr 140px 1fr; align-items: center; gap: 22px; margin-top: 10px; }
+.duel-duo { display: grid; grid-template-columns: 26px 1fr; grid-template-rows: auto auto; column-gap: 12px; align-items: center; padding: 16px 20px; border-radius: 14px; text-align: left; background: rgba(13, 30, 36, .08); border: 2px solid rgba(13, 30, 36, .12); }
+.duel-duo i { grid-row: 1 / 3; width: 26px; height: 26px; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .7); }
+.duel-duo b { font: 800 28px/1.1 var(--tekst); color: var(--inkt); }
+.duel-duo span { font: 600 22px/1.2 var(--tekst); color: rgba(13, 30, 36, .7); }
+.duel-duo.is-binnen { border-color: #E9B949; background: rgba(233, 185, 73, .18); }
+.duel-duo.is-goed { border-color: #1C8F62; background: rgba(40, 176, 123, .2); }
+.duel-duo.is-fout { border-color: #C8283F; background: rgba(226, 71, 90, .14); }
+.duel-tijd { justify-self: center; width: 120px; height: 120px; border-radius: 50%; display: grid; place-items: center; font: 900 54px/1 var(--tekst); font-variant-numeric: tabular-nums; color: var(--inkt); background: radial-gradient(circle at 40% 35%, #FFF1C6, #E9B949 58%, #A8741F); box-shadow: 0 4px 0 rgba(0, 0, 0, .25); }
+.duel-tijd:empty { visibility: hidden; }
+.duel-tijd.is-bijna { color: #fff; background: radial-gradient(circle at 40% 35%, #FF8C9A, #C8283F 60%, #7A1020); }
+@media (prefers-reduced-motion: reduce) { .duel { animation: none !important; } }
 </style></head><body><div id="podium"><div id="stage">
   <canvas id="gl" aria-hidden="true"></canvas>
   <div id="labels" aria-hidden="true"></div>
@@ -6085,6 +6106,7 @@ const HUISREGELS = [
   'Zit er echt iets fout? Kom het melden. Dan doen Mark en Jesse een shotje.',
   'Fiches bijkopen? Dat kan: per adtje krijg je 1 fiche.',
   'Ruzie of te lang discussiëren? Dan gaat er een fiche van je stapel.',
+  'Elk duo heeft één steelkaart in de app: daag een ander duo uit voor een rekenduel om 2 fiches.',
 ];
 SC.welkom = {
   fasen: ['welkom', 'huisregels'],
@@ -6739,6 +6761,7 @@ async function ververs(metUpdate = true) {
     if (!bezig && metUpdate) SC[h.sc.type].toon(h.sc, h.f, { nieuw: false, animeer: false });
     return;
   }
+  if (DUELNU) { if (metUpdate && !bezig) updateDuel(); return; }
   if (metUpdate && !bezig && SC[h.sc.type].update) SC[h.sc.type].update(h.sc, h.f, oud);
 }
 async function naar(n, vooruit = false) {
@@ -6762,16 +6785,116 @@ async function naar(n, vooruit = false) {
   } finally { bezig = false; }
 }
 function volgende() {
+  if (DUELNU) { duelVolgende(); return; }
   const h = huidig(); if (bezig || !h) return;
   const impl = SC[h.sc.type];
   if (impl.spatie && impl.spatie(h.sc, h.f)) return;
+  // een duel (steelkaart) gaat voor de volgende vraag
+  const nx = STAPPEN[pos + 1];
+  if (nx && nx.f === 'open' && (SCRIPT[nx.i].type === 'vraag' || SCRIPT[nx.i].type === 'gok') && duelInWacht()) { startDuel(); return; }
   naar(pos + 1, true);
 }
 function vorige() {
+  if (DUELNU) { melding('Eerst het duel afmaken.'); return; }
   const h = huidig(); if (bezig || !h) return;
   const impl = SC[h.sc.type];
   if (impl.terug && impl.terug(h.sc, h.f)) return;
   naar(pos - 1, false);
+}
+
+/* ---------- het duel (steelkaart) ----------
+   Een duo daagt via de app een ander duo uit. Voordat de volgende vraag opengaat, komt het duel in beeld:
+   een lastige som, het eerste goede antwoord wint 2 fiches. De database kijkt na en schuift de fiches. */
+const DUEL_TIJD = 60;
+let DUELNU = null, duelStopVraag = 0, duelTik = 0, duelGezien = '', duelEinde = 0, duelGesloten = 0;
+const duelVan = (id) => (DB && DB.duels ? DB.duels.find((d) => d.id === id) : null);
+const duelInWacht = () => (DB && DB.duels ? DB.duels.find((d) => d.fase === 'wacht' || d.fase === 'open') : null);
+async function startDuel() {
+  if (bezig) return; bezig = true;
+  try {
+    stopKlokken(); stapToken++; S.afbreken(); labels.wis('stap'); labels.wis('rang');
+    const r = await host('quiz_host_duel_open');
+    if (!r || r.fout) { melding((r && r.fout) || 'Het duel kon niet beginnen.'); return; }
+    await ververs(false);
+    DUELNU = r.id; duelGezien = ''; toonDuel(true);
+  } catch (e) { melding(e.message); } finally { bezig = false; }
+}
+function stopDuel() { DUELNU = null; duelGezien = ''; clearInterval(duelTik); duelTik = 0; S.focus(null); plakkatenWeg(); lampen(); }
+function duelVolgende() {
+  const d = duelVan(DUELNU);
+  if (!d || d.fase === 'klaar') { stopDuel(); volgende(); return; }
+  // het duel loopt nog: twee keer drukken stopt het (niemand wint)
+  if (duelStopVraag && Date.now() - duelStopVraag < 4000) { duelStopVraag = 0; host('quiz_host_duel_sluit', { p_id: d.id }).then(() => ververs()).catch((e) => melding(e.message)); return; }
+  duelStopVraag = Date.now(); melding('Het duel loopt nog. Druk nog een keer om het te stoppen.');
+}
+function duelStatus(d, id, a) {
+  const el = $('#duel-' + (id === d.van ? 'a' : 'b')); if (!el) return;
+  const x = DUO(id); if (!x) return;
+  const klaar = d.fase === 'klaar';
+  const tekst = !a ? (klaar ? 'Geen antwoord' : 'denkt na…') : klaar ? a : 'heeft geantwoord';
+  el.innerHTML = `<i style="--c:${x.kleur}"></i><b>${esc(x.naam)}</b><span>${esc(tekst)}</span>`;
+  el.classList.toggle('is-binnen', !!a && !klaar);
+  el.classList.toggle('is-goed', klaar && d.winnaar === id); el.classList.toggle('is-fout', klaar && !!a && d.winnaar !== id);
+}
+function toonDuel(animeer) {
+  const d = duelVan(DUELNU); if (!d) { stopDuel(); return; }
+  const A = DUO(d.van), B = DUO(d.naar);
+  kop(null); iedereenThuis(); plakkatenWeg(); lampen(); zetTafel({}); S.alleStaat('');
+  if (A && B) S.focus([d.van, d.naar], { dim: 0.55 });
+  S.shot('vraag', animeer ? 1.6 : 0.8); S.licht('spanning'); S.publiek(0.5);
+  S.schermen.tekst('Duel!', `${A ? A.naam : '?'} tegen ${B ? B.naam : '?'}`);
+  laag(`<div class="waas boven"></div><div class="duel porselein">${HOEKEN}<span class="gok-label">Duel · de steelkaart</span>
+    <h2>${esc(A ? A.naam : '?')} dagen ${esc(B ? B.naam : '?')} uit</h2>
+    <div class="duel-som"><span>${esc(d.som || '')}</span><span class="duel-uit" id="duel-uit"></span></div>
+    <p class="duel-regel" id="duel-regel">Wie het eerst goed heeft, wint 2 fiches. Eén poging per duo. Geen rekenmachine!</p>
+    <div class="duel-stand"><div class="duel-duo" id="duel-a"></div><div class="duel-tijd" id="duel-tijd"></div><div class="duel-duo" id="duel-b"></div></div></div>`);
+  // de klok: 60 seconden vanaf het openen (servertijd), daarna stopt het duel vanzelf
+  const verstreken = d.geopend_op && DB.nu ? (new Date(DB.nu) - new Date(d.geopend_op)) / 1000 : 0;
+  duelEinde = Date.now() + Math.max(0, DUEL_TIJD - verstreken) * 1000;
+  clearInterval(duelTik);
+  duelTik = setInterval(() => {
+    const nu = duelVan(DUELNU); if (!nu) return;
+    const rest = Math.max(0, Math.ceil((duelEinde - Date.now()) / 1000)), t = $('#duel-tijd');
+    if (t && nu.fase !== 'klaar') { t.textContent = rest; t.classList.toggle('is-bijna', rest <= 10); }
+    if (rest <= 0 && nu.fase !== 'klaar' && duelGesloten !== nu.id) { duelGesloten = nu.id; host('quiz_host_duel_sluit', { p_id: nu.id }).then(() => ververs()).catch((e) => { duelGesloten = 0; melding(e.message); }); }
+  }, 250);
+  if (animeer) { geluid.trom(1.4); later(1500, () => { geluid.open(); S.alleStaat('oeh'); later(1500, () => S.alleStaat('')); }); }
+  sr(`Duel. ${A ? A.naam : ''} dagen ${B ? B.naam : ''} uit. Reken uit: ${d.som}.`);
+  updateDuel(!animeer);
+}
+// elke seconde: wie heeft er geantwoord, en is er een winnaar?
+function updateDuel(stil = false) {
+  const d = duelVan(DUELNU); if (!d) return;
+  duelStatus(d, d.van, d.a_van); duelStatus(d, d.naar, d.a_naar);
+  const sleutel = d.fase + ':' + (d.winnaar || '');
+  if (sleutel === duelGezien) return;
+  const eerst = duelGezien === '';
+  duelGezien = sleutel;
+  if (d.fase !== 'klaar') return;
+  clearInterval(duelTik); duelTik = 0;
+  const t = $('#duel-tijd'); if (t) { t.textContent = ''; t.classList.remove('is-bijna'); }
+  const uit = $('#duel-uit'); if (uit) uit.textContent = ' = ' + Number(d.uitkomst).toLocaleString('nl-NL');
+  const W = d.winnaar ? DUO(d.winnaar) : null, verliezer = d.winnaar ? (d.winnaar === d.van ? d.naar : d.van) : null;
+  const regel = $('#duel-regel');
+  if (regel) regel.textContent = W ? `${W.naam} ${d.winnaar === d.van ? 'stelen' : 'winnen'} ${d.bedrag} ${d.bedrag === 1 ? 'fiche' : 'fiches'}${d.winnaar === d.van ? '' : ' van de uitdager'}!` : 'Niemand had het goed. Er gaan geen fiches over.';
+  if (regel) regel.classList.add('is-uitslag');
+  [[d.van, d.a_van], [d.naar, d.a_naar]].forEach(([id, a]) => { if (DUO(id)) { const u = d.winnaar === id ? 'goed' : a ? 'fout' : null; plakkaat(id, { tekst: a || '–', stil: stil, uitslag: u }); lamp(id, u); } });
+  if (stil && !eerst) { zetTafel({}); return; }
+  if (stil) { zetTafel({}); if (W) S.duoStaat(d.winnaar, 'juich'); return; }
+  S.licht(W ? 'feest' : 'fout'); later(2400, () => S.licht('show'));
+  if (W) {
+    geluid.onthul(); flits(); geluid.juich(3, 1); S.publiek(2); later(2600, () => S.publiek(0.7));
+    S.duoStaat(d.winnaar, 'juich', 0.1); S.confettiRegen(d.winnaar, 260);
+    if (verliezer && d.bedrag > 0 && DUO(verliezer)) {
+      const g = geldig();
+      // de stapels staan nog op de stand van voor het duel: eerst terugzetten, dan de fiches laten overvliegen
+      const voor = (id, delta) => Math.max(0, teamS(id).fiches - delta);
+      S.zetFiches(verliezer, voor(verliezer, -d.bedrag)); S.zetFiches(d.winnaar, voor(d.winnaar, d.bedrag));
+      tel(verliezer).zet(voor(verliezer, -d.bedrag)); tel(d.winnaar).zet(voor(d.winnaar, d.bedrag));
+      later(900, () => { S.duoStaat(verliezer, 'sip', 0.2); geluid.oeh(); });
+      later(1200, () => { S.stapelNaar(verliezer, d.winnaar, d.bedrag).then(g(() => { zetTafel({}); })); plus(verliezer, '−' + d.bedrag, true); later(900, () => plus(d.winnaar, '+' + d.bedrag)); });
+    }
+  } else { geluid.fout(); geluid.oeh(); [d.van, d.naar].forEach((id) => S.duoStaat(id, 'sip', 0.2)); }
 }
 
 /* ---------- inloggen en starten ---------- */
@@ -6810,6 +6933,8 @@ async function start() {
   gestart = true;
   window.SHOW = { naar, S, get STAPPEN() { return STAPPEN; }, SCRIPT, get DB() { return DB; }, get pos() { return pos; }, volgende };
   await naar(Math.max(0, Math.min(begin, STAPPEN.length - 1)), false);
+  const duelOpen = DB.duels && DB.duels.find((d) => d.fase === 'open');
+  if (duelOpen) { DUELNU = duelOpen.id; duelGezien = ''; toonDuel(false); }
   setInterval(() => { if (!bezig && !document.hidden) ververs(); }, 1000);
   VR.slice(0, 12).forEach(laadDia);
   setInterval(async () => { try { VR = await host('quiz_host_show_vragen'); } catch (e) { /* volgende keer */ } }, 20000);
