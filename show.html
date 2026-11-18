@@ -474,6 +474,34 @@ button { font: inherit; }
 .kaart.is-naast .antwoord-slot:empty::before { content: "?"; font: 900 120px/1 var(--tekst); color: rgba(14, 37, 48, .14); }
 .kaart.is-pot.is-naast { justify-content: flex-start; padding-top: 34px; }
 .kaart.is-pot.is-naast .getallijn { width: 100%; }
+
+/* finale: het verhaal, de rekeningen en de vraag samen op één pagina */
+.finale-blad { position: absolute; left: 70px; right: 70px; top: 148px; display: grid; grid-template-columns: 820px 1fr; gap: 44px; align-items: start; animation: zachtIn .6s both; }
+.fin-verhaal { position: relative; padding: 40px 48px 38px; }
+.fin-verhaal .hoek { width: 34px; height: 34px; }
+.fin-verhaal p { margin: 14px 0 0; font: 500 27px/1.4 var(--tekst); color: var(--inkt); text-wrap: pretty; }
+.fin-verhaal p.slot { margin-top: 20px; font-weight: 800; color: #7A1626; }
+.fin-rechts { display: flex; flex-direction: column; gap: 26px; padding-top: 6px; }
+.fin-vraag { margin: 0; font: 900 60px/1.04 var(--tekst); font-stretch: 80%; letter-spacing: -.01em; color: var(--goud-licht); text-shadow: 0 4px 20px rgba(0, 0, 0, .9); text-wrap: balance; }
+.bonnen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.bon { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 18px 20px; border-radius: 10px; color: var(--inkt); background: linear-gradient(180deg, #FFFBF0, #EBDDBA); box-shadow: 0 8px 22px rgba(0, 0, 0, .5), inset 0 0 0 1px rgba(140, 94, 22, .35); animation: bonIn .6s cubic-bezier(.2, .9, .3, 1.3) both; }
+.bon span { font: 800 28px/1 var(--tekst); }
+.bon b { font: 800 28px/1 var(--tekst); font-variant-numeric: tabular-nums; color: #3A2A10; white-space: nowrap; }
+.bon.is-open { color: #fff; background: linear-gradient(180deg, #D8344A, #A4182C); box-shadow: 0 0 0 3px var(--goud), 0 0 30px rgba(233, 185, 73, .45), 0 8px 22px rgba(0, 0, 0, .5); }
+.bon.is-open b { color: #fff; font-size: 38px; }
+.bon:nth-child(3n+2) { animation-delay: .06s; } .bon:nth-child(3n) { animation-delay: .12s; }
+/* het resultaat van een video: de antwoorddia schermvullend, net als de PowerPoint in presentatiemodus */
+.dia.is-vol { left: 0; top: 0; transform: none; width: 1920px; height: 1080px; border-radius: 0; box-shadow: none; animation: zachtIn .5s both; }
+@media (prefers-reduced-motion: reduce) { .finale-blad, .bon, .dia.is-vol { animation: none !important; } }
+
+/* aanmelden: oude testantwoorden in de quiz */
+.oud-test { position: absolute; right: 70px; bottom: 70px; width: 600px; padding: 26px 30px; border-radius: 18px; display: grid; gap: 12px; color: #fff; background: rgba(120, 20, 34, .94); border: 2px solid #F2CF79; box-shadow: 0 20px 60px rgba(0, 0, 0, .6); pointer-events: auto; }
+.oud-test[hidden] { display: none; }
+.oud-test b { font: 800 28px/1.2 var(--tekst); }
+.oud-test span { font: 500 21px/1.35 var(--tekst); color: rgba(255, 255, 255, .9); }
+.oud-test button { justify-self: start; margin-top: 6px; padding: 14px 24px; border: 0; border-radius: 999px; cursor: pointer; font: 800 22px/1 var(--tekst); color: var(--inkt); background: linear-gradient(180deg, #FFE9A8, #E9B949 55%, #B98A35); }
+.oud-test button.is-zeker { color: #fff; background: #E2475A; box-shadow: 0 0 0 3px #fff; }
+.oud-test button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
 </style></head><body><div id="podium"><div id="stage">
   <canvas id="gl" aria-hidden="true"></canvas>
   <div id="labels" aria-hidden="true"></div>
@@ -522,7 +550,7 @@ button { font: inherit; }
   <div class="doos porselein">
     <h2 id="hulp-kop">Bediening</h2>
     <dl>
-      <dt><kbd>Spatie</kbd> <kbd>→</kbd></dt><dd>Volgende stap. Opent en sluit ook de vragen op de telefoons. Een klik op het scherm of een presenter-clicker werkt ook.</dd>
+      <dt><kbd>Spatie</kbd> <kbd>→</kbd></dt><dd>Volgende stap. Bij een vraag: eerst de vraag, de volgende klik sluit hem en toont het antwoord met de uitbetaling. Een klik op het scherm of een presenter-clicker werkt ook.</dd>
       <dt><kbd>←</kbd></dt><dd>Een stap terug, alleen om iets opnieuw te tonen. Een gesloten vraag gaat niet opnieuw open. Bij de BN'ers gaat de foto een stap terug.</dd>
       <dt><kbd>F</kbd></dt><dd>Volledig scherm aan of uit.</dd>
       <dt><kbd>M</kbd></dt><dd>Geluid aan of uit.</dd>
@@ -5604,14 +5632,14 @@ function fmtGetal(n) {
   }
   return Number(n).toLocaleString('nl-NL', { maximumFractionDigits: 2 });
 }
-const EXTRA = {"uitleg": {"boedapest ontstond in 1873 uit drie steden buda ": {"uitleg": "Buda, Óbuda en Pest werden in 1873 samengevoegd tot één stad."}, "het parlement en de sint stefanusbasiliek zijn p": {"uitleg": "Een verwijzing naar 896, het jaar waarin de Magyaren zich hier vestigden."}, "wat betekent het woord gulyás goulash eigenlijk": {"uitleg": "De gulyás was de herder die op de poesta het vee hoedde. Zijn stoofpot kreeg zijn naam."}, "paprika is hét symbool van de hongaarse keuken w": {"uitleg": "Uit Midden- en Zuid-Amerika. Via de Ottomanen kwam hij in de 16e eeuw in Hongarije terecht."}, "wat gaat er traditioneel op een lángos het gefri": {"uitleg": "Eerst knoflookolie, dan zure room (tejföl) en geraspte kaas eroverheen."}, "uit hoeveel kruiden en specerijen wordt unicum d": {"uitleg": "Het recept van de familie Zwack is geheim. Een deel rijpt in eikenhouten vaten."}, "veel hongaren klinken nooit met bier waarom niet": {"uitleg": "Na de mislukte revolutie werden in 1849 in Arad 13 generaals geëxecuteerd. De belofte gold 150 jaar, maar veel Hongaren houden zich er nog steeds aan."}, "wat doen vooral oudere hongaren beroemd midden i": {"uitleg": "Op drijvende of stenen schaakborden, met het water tot aan hun borst."}, "de hongaar lászló bíró uit boedapest vond in 193": {"uitleg": "Hij was journalist en baalde van vlekkende vulpennen. In Engeland heet een balpen nog steeds een ‘biro’."}, "wat roep je in hongarije als je proost": {"uitleg": "Na zdraví is Tsjechisch, Kippis Fins en Na zdrowie Pools. Klink dus wel met wijn of pálinka."}, "hoeveel kilometer is het hemelsbreed van amsterd": {"uitleg": "Gemeten van de Dam tot het centrum van Boedapest."}, "hoeveel kamers telt het hongaarse parlementsgebo": {"uitleg": "Het is het grootste gebouw van Hongarije."}, "hoeveel zwembaden heeft het széchenyi bad": {"uitleg": "15 binnen en 3 buiten. Het grootste thermale bad van Europa."}, "hoeveel naamvallen heeft het hongaars het duits ": {"uitleg": "Daarom is Hongaars een van de moeilijkste talen ter wereld."}, "hoeveel letters heeft het langste hongaarse woor": {"uitleg": "Megszentségteleníthetetlenségeskedéseitekért. Succes met uitspreken."}, "op hoeveel manieren kun je een rubiks kubus huss": {"uitleg": "Precies 43.252.003.274.489.856.000. De pot is voor wie het dichtst bij de juiste orde van grootte zit."}, "hoe lang is de donau van bron tot zwarte zee": {"uitleg": "De rivier stroomt door tien landen, meer dan welke rivier ook."}, "hoeveel mensen zagen queen in 1986 live in het n": {"uitleg": "Op de plek van het Népstadion staat nu de Puskás Aréna."}, "hoe lang is de kettingbrug in meters": {"uitleg": "Geopend in 1849, de eerste vaste brug tussen Buda en Pest."}, "hoeveel forint krijg je voor 100": {"uitleg": "Wie het dichtst zit, mag het volgende rondje in forinten afrekenen."}}, "video": {"De man met de bril": {"vraag": "Hoe heet de man met de bril?", "sub": ""}, "De hand": {"vraag": "Wie neemt hier 5 likken?", "sub": "Je ziet alleen de eerste 3 seconden, zonder geluid."}, "De sombrero": {"vraag": "Wat gebeurde er hierna?", "sub": ""}, "Het strandbed": {"vraag": "Wat deed Tijn hierna?", "sub": "Je ziet alleen de eerste 4 seconden, zonder geluid."}, "De fiets": {"vraag": "Wie is dit?", "sub": "Vaag gemaakt en zonder geluid."}, "Stijn in de strandtent": {"vraag": "Wat heeft Stijn erna stiekem thuis gedaan?", "sub": ""}, "De Guinness": {"vraag": "Split Tristan hier de G?", "sub": "Je ziet alleen het begin, zonder geluid. Ja of nee?"}, "De dansbattle": {"vraag": "Wie ging de dansbattle aan?", "sub": "Je ziet alleen de eerste 4 seconden, zonder geluid."}}, "finale": {"onderwerp": "De rekening", "sub": "Een raadsel over ons twaalven. Pak pen en papier, je gaat ze nodig hebben.", "verhaal": ["Na de quiz belanden we met z’n twaalven in een ruin bar. Een bier kost 900 forint, een shot Unicum 700 forint en water is gratis. De barman schrijft de hele avond niets op.", "Tristan drinkt vier glazen water. TJ drinkt zes bier en drie shots. Andrew neemt drie bier en één shot, Kevin vier bier, Stijn één bier en Sven alleen drie shots. Gilles houdt het bij twee bier, Tijn bij twee bier en twee shots. Wessel komt een uur later binnen en drinkt twee bier. Gijs heeft er vijf op als hij om half twee naar huis gaat. Jesse drinkt drie bier, Mark drie bier en één shot.", "Om drie uur legt de barman twaalf rekeningen op de bar. ‘Bij mij betaal je niet voor wat je drinkt,’ zegt hij. ‘Je betaalt voor wie je bent.’"], "rekeningen": [["Andrew", "3.000"], ["Gijs", "2.000"], ["Gilles", "3.000"], ["Kevin", "2.500"], ["Sven", "2.000"], ["Stijn", "2.500"], ["Tijn", "2.000"], ["TJ", "1.000"], ["Tristan", "3.500"], ["Wessel", "3.000"], ["Jesse", "?"], ["Mark", "?"]], "citaat": "‘Bij mij betaal je niet voor wat je drinkt. Je betaalt voor wie je bent.’"}};
+const EXTRA = {"uitleg": {"boedapest ontstond in 1873 uit drie steden buda ": {"uitleg": "Buda, Óbuda en Pest werden in 1873 samengevoegd tot één stad."}, "het parlement en de sint stefanusbasiliek zijn p": {"uitleg": "Een verwijzing naar 896, het jaar waarin de Magyaren zich hier vestigden."}, "wat betekent het woord gulyás goulash eigenlijk": {"uitleg": "De gulyás was de herder die op de poesta het vee hoedde. Zijn stoofpot kreeg zijn naam."}, "paprika is hét symbool van de hongaarse keuken w": {"uitleg": "Uit Midden- en Zuid-Amerika. Via de Ottomanen kwam hij in de 16e eeuw in Hongarije terecht."}, "wat gaat er traditioneel op een lángos het gefri": {"uitleg": "Eerst knoflookolie, dan zure room (tejföl) en geraspte kaas eroverheen."}, "uit hoeveel kruiden en specerijen wordt unicum d": {"uitleg": "Het recept van de familie Zwack is geheim. Een deel rijpt in eikenhouten vaten."}, "veel hongaren klinken nooit met bier waarom niet": {"uitleg": "Na de mislukte revolutie werden in 1849 in Arad 13 generaals geëxecuteerd. De belofte gold 150 jaar, maar veel Hongaren houden zich er nog steeds aan."}, "wat doen vooral oudere hongaren beroemd midden i": {"uitleg": "Op drijvende of stenen schaakborden, met het water tot aan hun borst."}, "de hongaar lászló bíró uit boedapest vond in 193": {"uitleg": "Hij was journalist en baalde van vlekkende vulpennen. In Engeland heet een balpen nog steeds een ‘biro’."}, "wat roep je in hongarije als je proost": {"uitleg": "Na zdraví is Tsjechisch, Kippis Fins en Na zdrowie Pools. Klink dus wel met wijn of pálinka."}, "hoeveel kilometer is het hemelsbreed van amsterd": {"uitleg": "Gemeten van de Dam tot het centrum van Boedapest."}, "hoeveel kamers telt het hongaarse parlementsgebo": {"uitleg": "Het is het grootste gebouw van Hongarije."}, "hoeveel zwembaden heeft het széchenyi bad": {"uitleg": "15 binnen en 3 buiten. Het grootste thermale bad van Europa."}, "hoeveel naamvallen heeft het hongaars het duits ": {"uitleg": "Daarom is Hongaars een van de moeilijkste talen ter wereld."}, "hoeveel letters heeft het langste hongaarse woor": {"uitleg": "Megszentségteleníthetetlenségeskedéseitekért. Succes met uitspreken."}, "op hoeveel manieren kun je een rubiks kubus huss": {"uitleg": "Precies 43.252.003.274.489.856.000. De pot is voor wie het dichtst bij de juiste orde van grootte zit."}, "hoe lang is de donau van bron tot zwarte zee": {"uitleg": "De rivier stroomt door tien landen, meer dan welke rivier ook."}, "hoeveel mensen zagen queen in 1986 live in het n": {"uitleg": "Op de plek van het Népstadion staat nu de Puskás Aréna."}, "hoe lang is de kettingbrug in meters": {"uitleg": "Geopend in 1849, de eerste vaste brug tussen Buda en Pest."}, "hoeveel forint krijg je voor 100": {"uitleg": "Wie het dichtst zit, mag het volgende rondje in forinten afrekenen."}, "de rekening wat betalen jesse en mark samen in f": {"uitleg": "Je betaalt 500 forint per letter van je naam. Jesse = 2.500 en Mark = 2.000, samen 4.500 forint."}}, "video": {"De man met de bril": {"vraag": "Hoe heet de man met de bril?", "sub": ""}, "De hand": {"vraag": "Wie neemt hier 5 likken?", "sub": "Je ziet alleen de eerste 3 seconden, zonder geluid."}, "De sombrero": {"vraag": "Wat gebeurde er hierna?", "sub": ""}, "Het strandbed": {"vraag": "Wat deed Tijn hierna?", "sub": "Je ziet alleen de eerste 4 seconden, zonder geluid."}, "De fiets": {"vraag": "Wie is dit?", "sub": "Vaag gemaakt en zonder geluid."}, "Stijn in de strandtent": {"vraag": "Wat heeft Stijn erna stiekem thuis gedaan?", "sub": ""}, "De Guinness": {"vraag": "Split Tristan hier de G?", "sub": "Je ziet alleen het begin, zonder geluid. Ja of nee?"}, "De dansbattle": {"vraag": "Wie ging de dansbattle aan?", "sub": "Je ziet alleen de eerste 4 seconden, zonder geluid."}, "De zoen": {"vraag": "Wat gebeurde er hierna?", "sub": ""}}, "finale": {"onderwerp": "De rekening", "sub": "Een raadsel over ons twaalven. Pak pen en papier, je gaat ze nodig hebben.", "verhaal": ["Na de quiz belanden we met z’n twaalven in een ruin bar. Een bier kost 900 forint, een shot Unicum 700 forint en water is gratis. De barman schrijft de hele avond niets op.", "Tristan drinkt vier glazen water. TJ drinkt zes bier en drie shots. Andrew neemt drie bier en één shot, Kevin vier bier, Stijn één bier en Sven alleen drie shots. Gilles houdt het bij twee bier, Tijn bij twee bier en twee shots. Wessel komt een uur later binnen en drinkt twee bier. Gijs heeft er vijf op als hij om half twee naar huis gaat. Jesse drinkt drie bier, Mark drie bier en één shot.", "Om drie uur legt de barman twaalf rekeningen op de bar. ‘Bij mij betaal je niet voor wat je drinkt,’ zegt hij. ‘Je betaalt voor wie je bent.’"], "rekeningen": [["Andrew", "3.000"], ["Gijs", "2.000"], ["Gilles", "3.000"], ["Kevin", "2.500"], ["Sven", "2.000"], ["Stijn", "2.500"], ["Tijn", "2.000"], ["TJ", "1.000"], ["Tristan", "3.500"], ["Wessel", "3.000"], ["Jesse", "?"], ["Mark", "?"]], "citaat": "‘Bij mij betaal je niet voor wat je drinkt. Je betaalt voor wie je bent.’"}};
 const RONDE_INFO = {
   'Ronde 1': { chip: '1', titel: 'De stad', tekst: 'Tien vragen over waar we nu zijn. Opletten bij de tour had zin.', gok: { naam: 'Inzet vooraf', regels: ['Je kent alleen de titel van de ronde.', 'Zet 1 tot 5 fiches in dat jullie minstens 6 van de 10 goed hebben.', 'Gehaald: de bank verdubbelt je inzet. Niet gehaald: inzet kwijt.'] } },
   'Ronde 2': { chip: '2', titel: 'Wie is deze BN’er?', tekst: 'Tien bekende Nederlanders, flink verpixeld. Elke foto wordt in drie stappen scherper.', gok: { naam: 'Hoe eerder, hoe meer', regels: ['Elke foto wordt in 3 stappen scherper.', 'Goed bij stap 1 = 3 fiches, stap 2 = 2 fiches, stap 3 = 1 fiche.', 'Fout? Bij de volgende stap mag je het nog een keer proberen.'] } },
-  'Ronde 3': { chip: '3', titel: 'Hoe goed ken je de groep?', tekst: 'Vragen over ons. Wie hier slecht scoort, moet zich zorgen maken.', gok: { naam: 'Wed op de sukkels', regels: ['Zet 1 tot 3 fiches in op het duo dat deze ronde het slechtst scoort.', 'Op jezelf inzetten mag niet.', 'Goed gegokt: inzet verdubbeld. Mis: inzet kwijt.'] } },
-  'Ronde 4': { chip: '4', titel: 'Wie zoeken we?', tekst: 'Elk raadsel leidt naar iemand uit de groep. Wie wordt hier bedoeld?', gok: { naam: 'De race', regels: ['Weet je het? Stuur je antwoord meteen in.', 'Eerste goede antwoord = 3 fiches, tweede = 2, daarna 1.', 'Fout ingestuurd? Dan lig je eruit voor dit raadsel.'] } },
+  'Ronde 3': { chip: '3', titel: 'Hoe goed ken je de groep?', tekst: 'Vragen over ons. Wie hier slecht scoort, moet zich zorgen maken.', gok: { naam: 'Wed op de sukkels', regels: ['Zet 1 tot 3 fiches in op het duo dat deze ronde het slechtst scoort. Op jezelf mag niet.', 'Goed gegokt: inzet verdubbeld. Mis: inzet kwijt.', 'De sukkel zelf betaalt 3 fiches aan de bank.'] } },
+  'Ronde 4': { chip: '4', titel: 'Wie zoeken we?', tekst: 'Elk raadsel leidt naar iemand uit de groep. Wie wordt hier bedoeld?', gok: { naam: 'De race', regels: ['Weet je het? Stuur je antwoord meteen in.', 'Eerste goede antwoord = 3 fiches, tweede = 2, alle andere goede antwoorden = 1.', 'Fout ingestuurd? Dan lig je eruit voor dit raadsel.'] } },
   'Ronde 5': { chip: '5', titel: 'Raad het monument', tekst: 'Monumenten van over de hele wereld. Je ziet maar een klein stukje. Welk is het?', gok: { naam: 'Dubbel of niks', regels: ['Zeker van je antwoord? Kies in de app Dubbel of niks.', 'Dubbel en goed = 2 fiches. Dubbel en fout = 1 fiche kwijt.', 'Zonder dubbel: goed = 1 fiche, fout kost niks.'] } },
-  'Ronde 6': { chip: '6', titel: 'Bewijsmateriaal', tekst: 'Acht video’s uit onze eigen camerarol. Echt gebeurd. Niemand is veilig.', gok: { naam: 'Blind inzetten', regels: ['Vóór elke video zet je 1, 2 of 3 fiches in. Je kent alleen de titel.', 'Daarna zie je de video en de vraag. Stuur je antwoord in.', 'Goed = inzet verdubbeld. Fout = inzet kwijt.'] } },
+  'Ronde 6': { chip: '6', titel: 'Bewijsmateriaal', tekst: 'Negen video’s uit onze eigen camerarol. Echt gebeurd. Niemand is veilig.', gok: { naam: 'Blind inzetten', regels: ['Vóór elke video zet je 1, 2 of 3 fiches in. Je kent alleen de titel.', 'Daarna zie je de video en de vraag. Stuur je antwoord in.', 'Goed = inzet verdubbeld. Fout = inzet kwijt.'] } },
   'Ronde 7': { chip: '7', titel: 'Groepsapp Wrapped', tekst: 'Ruim drie jaar groepsapp, helemaal doorgerekend. Wie kent onze cijfers het best?', gok: { naam: 'Bank!', regels: ['Elk goed antwoord op rij levert 1 fiche meer op: 1, 2, 3, 4…', 'Druk op Bank! vóór de volgende vraag: je stapel is veilig en je begint weer bij 1.', 'Fout antwoord? Dan gaat je hele stapel terug naar de bank.'] } },
   'Ronde 8': { chip: '8', titel: 'Schatten maar', tekst: 'Niemand weet het precies. Wie het dichtst in de buurt zit, pakt de pot.', gok: { naam: 'De pot', regels: ['Elk duo legt bij elke vraag 1 fiche in de pot.', 'Wie het dichtst bij het antwoord zit, pakt de hele pot.', 'Even dichtbij? Dan delen jullie de pot.'] } },
   'Finale': { chip: 'F', titel: 'Alles of niets', tekst: 'Eén laatste vraag. Wie durft, kan alles nog omgooien.', gok: { naam: 'All-in', regels: ['Je krijgt eerst alleen het onderwerp te zien.', 'Zet geheim in hoeveel fiches je waagt: van 0 tot alles.', 'Goed = inzet verdubbeld. Fout = inzet kwijt.'] } },
@@ -5739,6 +5767,7 @@ function plaats(tid, ctx) {
   if (gok && !(q && q.id === gok.id)) {
     const g = inzT(gok.id, tid);
     if (g && g.i > 0 && !ctx.gokBetaald) { stapel -= (af(g) ? g.d || 0 : 0) + g.i; cirkel += g.i; label = `Inzet ${g.i}`; }
+    if (gok.soort === 'sukkel' && (!ctx.gokBetaald || ctx.boeteNog)) stapel += boeteVan(gok.ronde, tid);
   }
   if (q) {
     const x = inzT(q.id, tid);
@@ -5880,7 +5909,7 @@ function lijnZet(q, onthuld, anim) {
 const MEDIA = {};
 // De dia's uit de PowerPoint, per vraag: vraag, de drie stappen van de BN'ers (w3, w2, w1), de titeldia van een video (inzet),
 // het verhaal van de finale en de antwoorddia. 'vlak' is de plek van de video op de dia, net als in de PowerPoint.
-const DIA = {"2": {"vraag": "dia/006.jpg"}, "3": {"vraag": "dia/007.jpg"}, "4": {"vraag": "dia/008.jpg"}, "5": {"vraag": "dia/009.jpg"}, "6": {"vraag": "dia/010.jpg"}, "7": {"vraag": "dia/011.jpg"}, "8": {"vraag": "dia/012.jpg"}, "9": {"vraag": "dia/013.jpg"}, "10": {"vraag": "dia/014.jpg"}, "11": {"vraag": "dia/015.jpg"}, "12": {"w3": "dia/018.jpg", "w2": "dia/019.jpg", "w1": "dia/020.jpg", "vraag": "dia/018.jpg", "antwoord": "dia/050.jpg"}, "13": {"w3": "dia/021.jpg", "w2": "dia/022.jpg", "w1": "dia/023.jpg", "vraag": "dia/021.jpg", "antwoord": "dia/052.jpg"}, "14": {"w3": "dia/024.jpg", "w2": "dia/025.jpg", "w1": "dia/026.jpg", "vraag": "dia/024.jpg", "antwoord": "dia/054.jpg"}, "15": {"w3": "dia/027.jpg", "w2": "dia/028.jpg", "w1": "dia/029.jpg", "vraag": "dia/027.jpg", "antwoord": "dia/056.jpg"}, "16": {"w3": "dia/030.jpg", "w2": "dia/031.jpg", "w1": "dia/032.jpg", "vraag": "dia/030.jpg", "antwoord": "dia/058.jpg"}, "17": {"w3": "dia/033.jpg", "w2": "dia/034.jpg", "w1": "dia/035.jpg", "vraag": "dia/033.jpg", "antwoord": "dia/060.jpg"}, "18": {"w3": "dia/036.jpg", "w2": "dia/037.jpg", "w1": "dia/038.jpg", "vraag": "dia/036.jpg", "antwoord": "dia/062.jpg"}, "19": {"w3": "dia/039.jpg", "w2": "dia/040.jpg", "w1": "dia/041.jpg", "vraag": "dia/039.jpg", "antwoord": "dia/064.jpg"}, "20": {"w3": "dia/042.jpg", "w2": "dia/043.jpg", "w1": "dia/044.jpg", "vraag": "dia/042.jpg", "antwoord": "dia/066.jpg"}, "21": {"w3": "dia/045.jpg", "w2": "dia/046.jpg", "w1": "dia/047.jpg", "vraag": "dia/045.jpg", "antwoord": "dia/068.jpg"}, "23": {"vraag": "dia/071.jpg"}, "24": {"vraag": "dia/072.jpg"}, "25": {"vraag": "dia/073.jpg"}, "26": {"vraag": "dia/074.jpg"}, "27": {"vraag": "dia/075.jpg"}, "28": {"vraag": "dia/076.jpg"}, "29": {"vraag": "dia/077.jpg"}, "30": {"vraag": "dia/078.jpg"}, "31": {"vraag": "dia/079.jpg"}, "32": {"vraag": "dia/080.jpg"}, "33": {"vraag": "dia/083.jpg"}, "34": {"vraag": "dia/084.jpg"}, "35": {"vraag": "dia/085.jpg"}, "36": {"vraag": "dia/086.jpg"}, "37": {"vraag": "dia/087.jpg"}, "38": {"vraag": "dia/088.jpg"}, "39": {"vraag": "dia/089.jpg"}, "40": {"vraag": "dia/090.jpg"}, "41": {"vraag": "dia/091.jpg"}, "42": {"vraag": "dia/092.jpg"}, "43": {"vraag": "dia/096.jpg", "antwoord": "dia/107.jpg"}, "44": {"vraag": "dia/097.jpg", "antwoord": "dia/108.jpg"}, "45": {"vraag": "dia/098.jpg", "antwoord": "dia/109.jpg"}, "46": {"vraag": "dia/099.jpg", "antwoord": "dia/110.jpg"}, "47": {"vraag": "dia/100.jpg", "antwoord": "dia/111.jpg"}, "48": {"vraag": "dia/101.jpg", "antwoord": "dia/112.jpg"}, "49": {"vraag": "dia/102.jpg", "antwoord": "dia/113.jpg"}, "50": {"vraag": "dia/103.jpg", "antwoord": "dia/114.jpg"}, "51": {"vraag": "dia/104.jpg", "antwoord": "dia/115.jpg"}, "52": {"vraag": "dia/105.jpg", "antwoord": "dia/116.jpg"}, "53": {"inzet": "dia/119.jpg", "vraag": "dia/120.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}, "video": "video/53.mp4"}, "54": {"inzet": "dia/121.jpg", "vraag": "dia/122.jpg", "antwoord": "dia/123.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}, "videoAntwoord": "video/54-antwoord.mp4", "video": "video/54.mp4"}, "55": {"inzet": "dia/124.jpg", "vraag": "dia/125.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}, "video": "video/55.mp4"}, "56": {"inzet": "dia/126.jpg", "vraag": "dia/127.jpg", "antwoord": "dia/128.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}, "videoAntwoord": "video/56-antwoord.mp4", "video": "video/56.mp4"}, "57": {"inzet": "dia/129.jpg", "vraag": "dia/130.jpg", "antwoord": "dia/131.jpg", "vlak": {"x": 0.6562, "y": 0.0533, "w": 0.2701, "h": 0.8933}, "videoAntwoord": "video/57-antwoord.mp4", "video": "video/57.mp4"}, "58": {"inzet": "dia/132.jpg", "vraag": "dia/133.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}, "video": "video/58.mp4"}, "59": {"inzet": "dia/134.jpg", "vraag": "dia/135.jpg", "antwoord": "dia/136.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}, "videoAntwoord": "video/59-antwoord.mp4", "video": "video/59.mp4"}, "60": {"inzet": "dia/137.jpg", "vraag": "dia/138.jpg", "antwoord": "dia/139.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}, "videoAntwoord": "video/60-antwoord.mp4", "video": "video/60.mp4"}, "61": {"vraag": "dia/142.jpg", "antwoord": "dia/143.jpg"}, "62": {"vraag": "dia/144.jpg", "antwoord": "dia/145.jpg"}, "63": {"vraag": "dia/146.jpg", "antwoord": "dia/147.jpg"}, "64": {"vraag": "dia/148.jpg", "antwoord": "dia/149.jpg"}, "65": {"vraag": "dia/150.jpg", "antwoord": "dia/151.jpg"}, "66": {"vraag": "dia/152.jpg", "antwoord": "dia/153.jpg"}, "67": {"vraag": "dia/154.jpg", "antwoord": "dia/155.jpg"}, "68": {"vraag": "dia/156.jpg", "antwoord": "dia/157.jpg"}, "69": {"vraag": "dia/158.jpg", "antwoord": "dia/159.jpg"}, "70": {"vraag": "dia/160.jpg", "antwoord": "dia/161.jpg"}, "71": {"vraag": "dia/162.jpg", "antwoord": "dia/163.jpg"}, "72": {"vraag": "dia/164.jpg", "antwoord": "dia/165.jpg"}, "73": {"vraag": "dia/166.jpg", "antwoord": "dia/167.jpg"}, "74": {"vraag": "dia/168.jpg", "antwoord": "dia/169.jpg"}, "75": {"vraag": "dia/170.jpg", "antwoord": "dia/171.jpg"}, "76": {"vraag": "dia/172.jpg", "antwoord": "dia/173.jpg"}, "77": {"vraag": "dia/174.jpg", "antwoord": "dia/175.jpg"}, "78": {"vraag": "dia/176.jpg", "antwoord": "dia/177.jpg"}, "79": {"vraag": "dia/178.jpg", "antwoord": "dia/179.jpg"}, "80": {"vraag": "dia/180.jpg", "antwoord": "dia/181.jpg"}, "81": {"vraag": "dia/182.jpg", "antwoord": "dia/183.jpg"}, "82": {"vraag": "dia/184.jpg", "antwoord": "dia/185.jpg"}, "83": {"vraag": "dia/188.jpg"}, "84": {"vraag": "dia/189.jpg"}, "85": {"vraag": "dia/190.jpg"}, "86": {"vraag": "dia/191.jpg"}, "87": {"vraag": "dia/192.jpg"}, "88": {"vraag": "dia/193.jpg"}, "89": {"vraag": "dia/194.jpg"}, "90": {"vraag": "dia/195.jpg"}, "91": {"vraag": "dia/196.jpg"}, "92": {"vraag": "dia/197.jpg"}, "93": {"inzet": "dia/201.jpg", "verhaal": "dia/202.jpg", "vraag": "dia/203.jpg"}};
+const DIA = {"2": {"vraag": "dia/006.jpg"}, "3": {"vraag": "dia/007.jpg"}, "4": {"vraag": "dia/008.jpg"}, "5": {"vraag": "dia/009.jpg"}, "6": {"vraag": "dia/010.jpg"}, "7": {"vraag": "dia/011.jpg"}, "8": {"vraag": "dia/012.jpg"}, "9": {"vraag": "dia/013.jpg"}, "10": {"vraag": "dia/014.jpg"}, "11": {"vraag": "dia/015.jpg"}, "12": {"w3": "dia/018.jpg", "w2": "dia/019.jpg", "w1": "dia/020.jpg", "vraag": "dia/018.jpg", "antwoord": "dia/050.jpg"}, "13": {"w3": "dia/021.jpg", "w2": "dia/022.jpg", "w1": "dia/023.jpg", "vraag": "dia/021.jpg", "antwoord": "dia/052.jpg"}, "14": {"w3": "dia/024.jpg", "w2": "dia/025.jpg", "w1": "dia/026.jpg", "vraag": "dia/024.jpg", "antwoord": "dia/054.jpg"}, "15": {"w3": "dia/027.jpg", "w2": "dia/028.jpg", "w1": "dia/029.jpg", "vraag": "dia/027.jpg", "antwoord": "dia/056.jpg"}, "16": {"w3": "dia/030.jpg", "w2": "dia/031.jpg", "w1": "dia/032.jpg", "vraag": "dia/030.jpg", "antwoord": "dia/058.jpg"}, "17": {"w3": "dia/033.jpg", "w2": "dia/034.jpg", "w1": "dia/035.jpg", "vraag": "dia/033.jpg", "antwoord": "dia/060.jpg"}, "18": {"w3": "dia/036.jpg", "w2": "dia/037.jpg", "w1": "dia/038.jpg", "vraag": "dia/036.jpg", "antwoord": "dia/062.jpg"}, "19": {"w3": "dia/039.jpg", "w2": "dia/040.jpg", "w1": "dia/041.jpg", "vraag": "dia/039.jpg", "antwoord": "dia/064.jpg"}, "20": {"w3": "dia/042.jpg", "w2": "dia/043.jpg", "w1": "dia/044.jpg", "vraag": "dia/042.jpg", "antwoord": "dia/066.jpg"}, "21": {"w3": "dia/045.jpg", "w2": "dia/046.jpg", "w1": "dia/047.jpg", "vraag": "dia/045.jpg", "antwoord": "dia/068.jpg"}, "23": {"vraag": "dia/071.jpg"}, "24": {"vraag": "dia/072.jpg"}, "25": {"vraag": "dia/073.jpg"}, "26": {"vraag": "dia/074.jpg"}, "27": {"vraag": "dia/075.jpg"}, "28": {"vraag": "dia/076.jpg"}, "29": {"vraag": "dia/077.jpg"}, "30": {"vraag": "dia/078.jpg"}, "31": {"vraag": "dia/079.jpg"}, "32": {"vraag": "dia/080.jpg"}, "33": {"vraag": "dia/083.jpg"}, "34": {"vraag": "dia/084.jpg"}, "35": {"vraag": "dia/085.jpg"}, "36": {"vraag": "dia/086.jpg"}, "37": {"vraag": "dia/087.jpg"}, "38": {"vraag": "dia/088.jpg"}, "39": {"vraag": "dia/089.jpg"}, "40": {"vraag": "dia/090.jpg"}, "41": {"vraag": "dia/091.jpg"}, "42": {"vraag": "dia/092.jpg"}, "43": {"vraag": "dia/096.jpg", "antwoord": "dia/107.jpg"}, "44": {"vraag": "dia/097.jpg", "antwoord": "dia/108.jpg"}, "45": {"vraag": "dia/098.jpg", "antwoord": "dia/109.jpg"}, "46": {"vraag": "dia/099.jpg", "antwoord": "dia/110.jpg"}, "47": {"vraag": "dia/100.jpg", "antwoord": "dia/111.jpg"}, "48": {"vraag": "dia/101.jpg", "antwoord": "dia/112.jpg"}, "49": {"vraag": "dia/102.jpg", "antwoord": "dia/113.jpg"}, "50": {"vraag": "dia/103.jpg", "antwoord": "dia/114.jpg"}, "51": {"vraag": "dia/104.jpg", "antwoord": "dia/115.jpg"}, "52": {"vraag": "dia/105.jpg", "antwoord": "dia/116.jpg"}, "53": {"inzet": "dia/119.jpg", "vraag": "dia/120.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}, "video": "video/53.mp4"}, "54": {"inzet": "dia/121.jpg", "vraag": "dia/122.jpg", "antwoord": "dia/123.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}, "videoAntwoord": "video/54-antwoord.mp4", "video": "video/54.mp4"}, "55": {"inzet": "dia/124.jpg", "vraag": "dia/125.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}, "video": "video/55.mp4"}, "56": {"inzet": "dia/126.jpg", "vraag": "dia/127.jpg", "antwoord": "dia/128.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}, "videoAntwoord": "video/56-antwoord.mp4", "video": "video/56.mp4"}, "57": {"inzet": "dia/129.jpg", "vraag": "dia/130.jpg", "antwoord": "dia/131.jpg", "vlak": {"x": 0.6562, "y": 0.0533, "w": 0.2701, "h": 0.8933}, "videoAntwoord": "video/57-antwoord.mp4", "video": "video/57.mp4"}, "58": {"inzet": "dia/132.jpg", "vraag": "dia/133.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}, "video": "video/58.mp4"}, "59": {"inzet": "dia/134.jpg", "vraag": "dia/135.jpg", "antwoord": "dia/136.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}, "videoAntwoord": "video/59-antwoord.mp4", "video": "video/59.mp4"}, "60": {"inzet": "dia/137.jpg", "vraag": "dia/138.jpg", "antwoord": "dia/139.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}, "videoAntwoord": "video/60-antwoord.mp4", "video": "video/60.mp4"}, "61": {"vraag": "dia/142.jpg", "antwoord": "dia/143.jpg"}, "62": {"vraag": "dia/144.jpg", "antwoord": "dia/145.jpg"}, "63": {"vraag": "dia/146.jpg", "antwoord": "dia/147.jpg"}, "64": {"vraag": "dia/148.jpg", "antwoord": "dia/149.jpg"}, "65": {"vraag": "dia/150.jpg", "antwoord": "dia/151.jpg"}, "66": {"vraag": "dia/152.jpg", "antwoord": "dia/153.jpg"}, "67": {"vraag": "dia/154.jpg", "antwoord": "dia/155.jpg"}, "68": {"vraag": "dia/156.jpg", "antwoord": "dia/157.jpg"}, "69": {"vraag": "dia/158.jpg", "antwoord": "dia/159.jpg"}, "70": {"vraag": "dia/160.jpg", "antwoord": "dia/161.jpg"}, "71": {"vraag": "dia/162.jpg", "antwoord": "dia/163.jpg"}, "72": {"vraag": "dia/164.jpg", "antwoord": "dia/165.jpg"}, "73": {"vraag": "dia/166.jpg", "antwoord": "dia/167.jpg"}, "74": {"vraag": "dia/168.jpg", "antwoord": "dia/169.jpg"}, "75": {"vraag": "dia/170.jpg", "antwoord": "dia/171.jpg"}, "76": {"vraag": "dia/172.jpg", "antwoord": "dia/173.jpg"}, "77": {"vraag": "dia/174.jpg", "antwoord": "dia/175.jpg"}, "78": {"vraag": "dia/176.jpg", "antwoord": "dia/177.jpg"}, "79": {"vraag": "dia/178.jpg", "antwoord": "dia/179.jpg"}, "80": {"vraag": "dia/180.jpg", "antwoord": "dia/181.jpg"}, "81": {"vraag": "dia/182.jpg", "antwoord": "dia/183.jpg"}, "82": {"vraag": "dia/184.jpg", "antwoord": "dia/185.jpg"}, "83": {"vraag": "dia/188.jpg"}, "84": {"vraag": "dia/189.jpg"}, "85": {"vraag": "dia/190.jpg"}, "86": {"vraag": "dia/191.jpg"}, "87": {"vraag": "dia/192.jpg"}, "88": {"vraag": "dia/193.jpg"}, "89": {"vraag": "dia/194.jpg"}, "90": {"vraag": "dia/195.jpg"}, "91": {"vraag": "dia/196.jpg"}, "92": {"vraag": "dia/197.jpg"}, "93": {"inzet": "dia/201.jpg", "verhaal": "dia/202.jpg", "vraag": "dia/203.jpg"}, "94": {"inzet": "dia/v9-inzet.jpg", "vraag": "dia/v9-vraag.jpg", "vlak": {"x": 0.6499, "y": 0.0533, "w": 0.2827, "h": 0.8933}, "video": "video/94.mp4"}};
 let mapBestanden = 0;
 // de video's uit de PowerPoint staan naast show.html in video/ (een zelf gekozen map gaat voor)
 for (const [id, d] of Object.entries(DIA)) {
@@ -5959,9 +5988,9 @@ SC.lobby = {
       <div class="lobby-rij"><div class="lobby-qr porselein"><img src="${QR_SRC}" alt="QR-code naar de quiz-app"></div>
       <ol class="lobby-stappen"><li>Scan de code</li><li>Tik aan wie jullie zijn</li><li>Wacht op de show</li></ol></div>
       <div class="lobby-teller"><b>0</b><span id="lobby-tal-tekst">duo's binnen</span></div><ul class="lobby-lijst"></ul>
-      <div class="lobby-klaar"><kbd>Spatie</kbd> start de show</div></div>`);
+      <div class="lobby-klaar"><kbd>Spatie</kbd> start de show</div></div><div class="oud-test" id="oud-test" hidden></div>`);
     DUOS.forEach((d) => { S.podiumAan(d.id, true); S.duoZicht(d.id, true); tel(d.id).zicht(true); S.opPlek(d.id); });
-    this.lijst();
+    this.lijst(); this.oudeTest();
     sr('Meld je duo aan. Scan de QR-code.');
   },
   lijst() {
@@ -5971,6 +6000,27 @@ SC.lobby = {
     $('#lobby-tal-tekst').textContent = N === 1 ? 'duo binnen' : "duo's binnen";
     $('#laag .lobby').classList.toggle('is-klaar', N >= 2);
   },
+  // Staan er nog antwoorden van een eerdere test in de quiz, dan gaan die vragen niet meer open op de telefoons.
+  oudeTest() {
+    const el = $('#oud-test'); if (!el) return;
+    const n = DB ? DB.inz.length : 0;
+    if (!n) { el.hidden = true; el.innerHTML = ''; return; }
+    if (!el.hidden) return;
+    el.hidden = false;
+    el.innerHTML = `<b>Er staan nog ${n} ${n === 1 ? 'antwoord' : 'antwoorden'} van een eerdere test in de quiz.</b><span>Daardoor gaan die vragen niet open op de telefoons. Wis ze voordat je begint. De duo's melden zich daarna opnieuw aan.</span><button type="button" id="wis-test">Wis de oude test</button>`;
+    const knop = $('#wis-test'); let zeker = false, klok = 0;
+    knop.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (!zeker) { zeker = true; knop.textContent = 'Zeker? Klik nog een keer'; knop.classList.add('is-zeker'); clearTimeout(klok); klok = setTimeout(() => { zeker = false; knop.textContent = 'Wis de oude test'; knop.classList.remove('is-zeker'); }, 5000); return; }
+      knop.disabled = true; knop.textContent = 'Bezig met wissen…';
+      try {
+        await host('quiz_host_reset', { p_zeker: 'RESET' });
+        try { Object.keys(sessionStorage).filter((k) => k.startsWith('bq_rad_') || k === 'bq_show_stap').forEach((k) => sessionStorage.removeItem(k)); } catch (x) { /* geen opslag */ }
+        location.reload();
+      } catch (x) { knop.disabled = false; knop.textContent = 'Wis de oude test'; melding('Wissen lukte niet: ' + x.message); }
+    });
+  },
+  update() { this.oudeTest(); },
   nieuweDuos(ids) {
     ids.forEach((id, k) => later(k * 900, () => {
       S.tunnelShow(false); S.duoBinnen(id); geluid.applaus(2.2, 0.8); geluid.juich(1.8, 0.55); geluid.klik();
@@ -6044,17 +6094,33 @@ SC.duos = {
   },
 };
 
+// De rondetitel, met rechts de regels van de gok. Staat dezelfde titel er al, dan schuift alleen de plaat erbij.
+function rondeLaag(ronde, metPlaat, extra = '') {
+  const r = RONDE_INFO[ronde] || { chip: '?', titel: ronde, tekst: '', gok: { naam: '', regels: [] } };
+  const plaat = metPlaat && r.gok.naam ? `<aside class="gok-plaat porselein">${HOEKEN}<span class="gok-label">De gok</span><h2>${esc(r.gok.naam)}</h2><ol>${r.gok.regels.map((x) => `<li>${esc(x)}</li>`).join('')}</ol></aside>` : '';
+  const al = $('#laag .ronde-tekst .ronde-nr');
+  if (al && al.textContent === ronde) {
+    const oud = $('#laag .gok-plaat');
+    if (!plaat && oud) oud.remove();
+    if (plaat && !oud) $('#laag').insertAdjacentHTML('beforeend', plaat);
+    $('#laag #onder')?.remove();
+    if (extra) $('#laag').insertAdjacentHTML('beforeend', extra);
+  } else {
+    laag(`<div class="waas links"></div><div class="ronde-fiche fiche"><span>${esc(r.chip)}</span></div><div class="ronde-tekst"><div class="ronde-nr">${esc(ronde)}</div><h1 class="ronde-titel folie">${esc(r.titel)}</h1><p class="ronde-uitleg">${esc(r.tekst)}</p></div>${plaat}${extra}`);
+  }
+  if (plaat) requestAnimationFrame(() => $('#laag .gok-plaat')?.classList.add('is-zicht'));
+  return r;
+}
+
 SC.ronde = {
-  fasen: ['titel', 'gok'],
+  // Heeft de ronde een rondegok (ronde 1 en 3), dan is de regelpagina meteen de inzetpagina: zie SC.gok.
+  fasen: (sc) => (gokVan(sc.ronde) ? ['titel'] : ['titel', 'gok']),
   toon(sc, f, c) {
-    const r = RONDE_INFO[sc.ronde] || { chip: '?', titel: sc.ronde, tekst: '', gok: { naam: '', regels: [] } };
     kop(null); S.focus(null); iedereenThuis(); plakkatenWeg(); lampen(); zetTafel({}); S.alleStaat(''); zetPotLabel(0);
     DUOS.forEach((d) => tel(d.id).zicht(false));   // rustig beeld achter de rondetitel
+    const r = rondeLaag(sc.ronde, f === 'gok');
     if (c.nieuw) S.schermen.ronde(r.chip, r.titel);
     S.shot('midden', c.animeer && f === 'titel' ? 3.6 : 1.2);
-    laag(`<div class="waas links"></div><div class="ronde-fiche fiche"><span>${esc(r.chip)}</span></div><div class="ronde-tekst"><div class="ronde-nr">${esc(sc.ronde)}</div><h1 class="ronde-titel folie">${esc(r.titel)}</h1><p class="ronde-uitleg">${esc(r.tekst)}</p></div>
-      ${f === 'gok' && r.gok.naam ? `<aside class="gok-plaat porselein">${HOEKEN}<span class="gok-label">De gok</span><h2>${esc(r.gok.naam)}</h2><ol>${r.gok.regels.map((x) => `<li>${esc(x)}</li>`).join('')}</ol></aside>` : ''}`);
-    if (f === 'gok') requestAnimationFrame(() => $('#laag .gok-plaat')?.classList.add('is-zicht'));
     if (c.animeer && f === 'titel') { geluid.open(); later(250, () => geluid.applaus(2.2, 0.8)); S.licht('feest'); S.publiek(1.8); S.pyro('fontein', [0, 1]); later(2200, () => { S.licht('show'); S.publiek(0.6); }); }
     else S.licht('show');
     if (c.animeer && f === 'gok') { geluid.open(); S.alleStaat('oeh'); later(1700, () => S.alleStaat('')); }
@@ -6070,54 +6136,55 @@ async function openVraag(q) {
     if (q.modus === 'waarde' && DB.waarde !== 3 && leeg) await host('quiz_host_waarde', { p_waarde: 3 });
     return;
   }
-  if (!leeg) return;   // al gespeeld met antwoorden: niet opnieuw openen
+  if (!leeg) {
+    // al gespeeld: niet opnieuw openen. Staat de quiz nog op een eerdere vraag, dan zijn het antwoorden van een oude test.
+    const plek = (vid) => SCRIPT.findIndex((s) => s.vid === vid && (s.type === 'vraag' || s.type === 'gok'));
+    if (!DB.vraag_id || plek(DB.vraag_id) < plek(q.id)) melding('Deze vraag heeft nog antwoorden van een eerdere test en gaat daarom niet open op de telefoons. Wis eerst de oude test: ga terug naar het aanmelden (begin van de show) en klik op "Wis de oude test".');
+    return;
+  }
   if (DB.fase === 'open' && DB.vraag_id) await host('quiz_host_fase', { p_fase: 'dicht' });
   await host('quiz_host_open', { p_vraag: q.id });
 }
 async function sluitVraag(q) {
   if (DB && q && DB.vraag_id === q.id && DB.fase === 'open') { await host('quiz_host_fase', { p_fase: 'dicht' }); q.gesloten = true; }
 }
-let autoPos = -1;
-function controleer(sc, klaar) {
-  const q = vraag(sc.vid);
-  if (!DB || DB.vraag_id !== q.id || pos < 0 || STAPPEN[pos].f !== 'open') return;
-  if (DB.fase === 'dicht' || DB.fase === 'stand') { if (!sc.doorgezet) { sc.doorgezet = true; later(400, () => volgende()); } return; }
-  if (DB.fase !== 'open' || !klaar(q) || autoPos === pos) return;
-  autoPos = pos; later(2500, () => { if (autoPos === pos) volgende(); });
-}
+const bankTekst = (n) => `De bank kijkt na: nog ${n} ${n === 1 ? 'antwoord' : 'antwoorden'}`;
 
+// De rondegok (ronde 1 en 3): de regels staan naast de rondetitel en de duo's zetten meteen in.
+// De inzetten gaan dicht zodra de eerste vraag opengaat.
 SC.gok = {
-  fasen: ['open', 'dicht'],
-  async actie(sc, f) { const q = vraag(sc.vid); if (f === 'open') await openVraag(q); else await sluitVraag(q); },
+  fasen: ['open'],
+  async actie(sc) { await openVraag(vraag(sc.vid)); },
   toon(sc, f, c) {
-    const q = vraag(sc.vid), r = RONDE_INFO[q.ronde] || { gok: { naam: 'De gok' } }, sukkel = q.soort === 'sukkel';
-    kop({ ronde: q.ronde }); S.focus(null); iedereenThuis(); S.shot('vraag', c.nieuw ? 1.8 : 0.8);
-    if (c.nieuw) { sc.doorgezet = false; plakkatenWeg(); }
-    laag(`${middenKaart('De gok', r.gok.naam, sukkel ? `Kies in de app het duo dat deze ronde het slechtst scoort en zet ${q.inzet_min} tot ${q.inzet_max} fiches in.` : `Zet in de app ${q.inzet_min} tot ${q.inzet_max} fiches in dat jullie minstens 6 van de 10 goed hebben.`)}<div class="onder" id="onder"><span class="pil" id="teller"></span></div>`);
+    const q = vraag(sc.vid);
+    kop(null); S.focus(null); iedereenThuis(); plakkatenWeg(); zetPotLabel(0);
+    DUOS.forEach((d) => tel(d.id).zicht(false));
+    const r = rondeLaag(q.ronde, true, '<div class="groot-onder" id="onder"><span class="pil" id="teller"></span></div>');
     S.schermen.tekst('Inzetten maar', r.gok.naam);
-    if (f === 'open') {
-      zetTafel({ q, dek: true }); lampen();
-      DUOS.forEach((d) => { if (ingezet(inzT(q.id, d.id))) lamp(d.id, 'ingezet'); S.duoStaat(d.id, ingezet(inzT(q.id, d.id)) ? '' : 'denkt'); });
-      teller(q, 'inzet'); S.licht('rustig');
-      if (c.animeer) geluid.open();
-      controleer(sc, alleIngezet);
-      sr(`${r.gok.naam}. Zet nu in via de app.`);
-      return;
-    }
-    lampen(); S.alleStaat(''); onderPil('Alle inzetten liggen op tafel'); S.licht('show');
-    if (sukkel) DUOS.forEach((d) => { const x = inzT(q.id, d.id); if (x && x.a) plakkaat(d.id, { tekst: plaatTekst(q, x), stil: !c.animeer }); });
-    if (!c.animeer) { zetTafel({ q }); return; }
-    zetTafel({ q, dek: true }); geluid.dicht();
-    later(900, () => inzettenNaarCirkel(q, null, null));
+    S.shot('midden', 1.2); S.licht('show');
+    zetTafel({ q, dek: true }); lampen();
+    DUOS.forEach((d) => { const x = inzT(q.id, d.id); if (ingezet(x)) lamp(d.id, 'ingezet'); S.duoStaat(d.id, ingezet(x) ? '' : 'denkt'); });
+    teller(q, 'inzet');
+    if (c.animeer) geluid.open();
+    sr(`De gok: ${r.gok.naam}. ${r.gok.regels.join(' ')} Zet nu in via de app.`);
   },
-  update(sc, f, oud) { if (f !== 'open') return; const q = vraag(sc.vid); aankomst(q, oud); teller(q, 'inzet'); controleer(sc, alleIngezet); },
+  update(sc, f, oud) { const q = vraag(sc.vid); aankomst(q, oud); teller(q, 'inzet'); },
 };
 
-const STADIA = (q) => (metVooraf(q) ? (q.ronde === 'Finale' ? ['inzet', 'verhaal', 'vraag'] : ['inzet', 'vraag']) : ['vraag']);
+const STADIA = (q) => (metVooraf(q) ? ['inzet', 'vraag'] : ['vraag']);
 const volgStadium = (q, st) => { const s = STADIA(q); return s[s.indexOf(st) + 1] || 'vraag'; };
 function beginStadium(q, f) { if (f !== 'open') return 'vraag'; const s = STADIA(q); return s[0] === 'inzet' && alleIngezet(q) ? s[1] : s[0]; }
+function finaleHTML(q) {
+  const f = EXTRA.finale, opl = f.oplossing || {};
+  const verhaal = (f.verhaal || []).map((t, k, a) => `<p${k === a.length - 1 ? ' class="slot"' : ''}>${esc(t)}</p>`).join('');
+  const bonnen = (f.rekeningen || []).map(([n, b]) => `<div class="bon${b === '?' ? ' is-open' : ''}" data-naam="${esc(n)}"><span>${esc(n)}</span><b>${b === '?' ? '?' : esc(b) + ' Ft'}</b></div>`).join('');
+  return `<div class="finale-blad"><section class="fin-verhaal porselein">${HOEKEN}<span class="gok-label">Het verhaal</span>${verhaal}</section>
+    <section class="fin-rechts"><h2 class="fin-vraag">${esc(vraagTekst(q))}</h2><div class="bonnen">${bonnen}</div>${f.citaat ? `<p class="fin-citaat">${esc(f.citaat)}</p>` : ''}</section></div>`;
+}
 function vraagHTML(q, stadium, groot, foto) {
   const fin = q.ronde === 'Finale', onder = (extra = '') => `<div class="${groot ? 'groot-onder' : 'onder'}" id="onder">${extra}<span class="pil" id="teller"></span></div>`;
+  // finale: het verhaal, de rekeningen en de vraag samen op één pagina, zodat iedereen het overzicht heeft
+  if (fin && groot && stadium === 'vraag' && EXTRA.finale) return finaleHTML(q) + onder();
   const rol = groot ? diaRol(q, stadium) : null;
   if (rol) return `<div class="dia" id="dia">${diaBinnen(q, rol)}</div>${onder(q.modus === 'waarde' && stadium === 'vraag' ? waardeHTML() : '')}`;
   if (stadium === 'inzet') {
@@ -6134,89 +6201,103 @@ function vraagHTML(q, stadium, groot, foto) {
   return `${kaart}${onder(q.modus === 'waarde' ? waardeHTML() : '')}`;
 }
 
+// heeft deze vraag een video met het resultaat (de antwoorddia met een video erin)?
+const heeftAntwoordVideo = (q) => { const d = DIA[q.id], m = MEDIA[q.id]; return !!(d && d.antwoord && d.vlak && m && m.antwoord && m.antwoord.video); };
+
 SC.vraag = {
-  fasen: ['open', 'dicht', 'onthul', 'uitbetaal'],
+  // open: de vraag. onthul: één klik voor de rest. De vraag gaat dicht, de bordjes klappen om,
+  // dan het goede antwoord en meteen de uitbetaling. Heeft de vraag een resultaatvideo, dan speelt die eerst groot.
+  fasen: ['open', 'onthul'],
   async actie(sc, f) {
     const q = vraag(sc.vid);
-    if (f === 'open') await openVraag(q);
-    else if (f === 'dicht') await sluitVraag(q);
-    else if (f === 'onthul' && q.modus === 'pot' && DB && DB.vraag_id === q.id) await host('quiz_host_pot').catch((e) => melding(e.message));
+    if (f === 'open') { await openVraag(q); return; }
+    await sluitVraag(q);
+    if (q.modus === 'pot' && DB && DB.vraag_id === q.id) await host('quiz_host_pot').catch((e) => melding(e.message));
   },
   toon(sc, f, c) {
     const q = vraag(sc.vid), gok = gokVan(q.ronde), pot = q.modus === 'pot', getal = q.soort === 'getal';
     if (c.nieuw) {
-      sc.doorgezet = false; sc.wachtOpBank = false; sc.layout = ''; sc.stadium = beginStadium(q, f); plakkatenWeg();
+      sc.layout = ''; sc.stadium = beginStadium(q, f); plakkatenWeg();
       if (!sc.stapelVoor) { sc.stapelVoor = Object.fromEntries(DUOS.map((d) => [d.id, teamS(d.id).stapel || 0])); sc.fichesVoor = Object.fromEntries(DUOS.map((d) => [d.id, teamS(d.id).fiches])); }
     }
+    if (f === 'open') { sc.wachtOpBank = false; sc.betaald = false; sc.videoSpeelt = false; sc.videoKlaar = false; }
+    else if (!c.animeer) { sc.wachtOpBank = false; sc.videoSpeelt = false; sc.videoKlaar = true; }
     if (f !== 'open') sc.stadium = 'vraag';
+    const resultaat = f === 'onthul' && c.animeer && !sc.videoKlaar && heeftAntwoordVideo(q);
     const mcKaart = q.soort === 'mc' && !(DIA[q.id] && DIA[q.id].vlak);
     const groot = f === 'open' && !mcKaart && !!diaRol(q, sc.stadium);
     laadVooruit(q.id);
-    kop(sc); S.focus(null); iedereenThuis();
+    kop(resultaat ? null : sc); S.focus(null); iedereenThuis();
     const foto = f !== 'open' && q.soort !== 'mc' ? fotoVan(q) : null;
-    const layout = mcKaart ? 'kaart:mc' : (groot ? 'groot:' : 'kaart:') + (f === 'open' ? sc.stadium : 'vraag') + (foto ? ':foto' : '') + (groot && MEDIA[q.id] ? ':video' : '');
+    const layout = resultaat ? 'resultaat' : mcKaart ? 'kaart:mc' : (groot ? 'groot:' : 'kaart:') + (f === 'open' ? sc.stadium : 'vraag') + (foto ? ':foto' : '') + (groot && MEDIA[q.id] ? ':video' : '');
     if (sc.layout !== layout) {
       sc.layout = layout;
-      laag((groot ? '<div class="waas donker"></div>' : '') + vraagHTML(q, f === 'open' ? sc.stadium : 'vraag', groot, foto));
-      pasVraag(); if (groot) speelMedia();
-      if (!groot && sc.stadium === 'vraag') { const alle = rondeVragen(q.ronde); S.schermen.vraag(`Vraag ${alle.indexOf(q) + 1} van ${alle.length}`, vraagTekst(q)); }
+      if (resultaat) laag(`<div class="dia is-vol" id="dia">${diaBinnen(q, 'antwoord')}</div>`);
+      else {
+        laag((groot ? '<div class="waas donker"></div>' : '') + vraagHTML(q, f === 'open' ? sc.stadium : 'vraag', groot, foto));
+        pasVraag(); if (groot) speelMedia();
+      }
+      if (!groot && !resultaat && sc.stadium === 'vraag') { const alle = rondeVragen(q.ronde); S.schermen.vraag(`Vraag ${alle.indexOf(q) + 1} van ${alle.length}`, vraagTekst(q)); }
     }
     S.shot('vraag', c.nieuw ? 1.8 : 0.8);
     if (q.modus === 'waarde') waardeZet(q);
-    if (pot) zetPotLabel(f === 'uitbetaal' && !c.animeer ? 0 : potAantal(q));
+    if (pot) zetPotLabel(potAantal(q));
     const ctx = { q, gok, stapelVoor: sc.stapelVoor };
     if (f === 'open') {
       plakkatenWeg(); zetTafel({ ...ctx, dek: true }); lampen();
       DUOS.forEach((d) => { const x = inzT(q.id, d.id); if (ingezet(x)) lamp(d.id, 'ingezet'); S.duoStaat(d.id, geantwoord(q, x) ? '' : 'denkt'); });
-      teller(q, sc.stadium); S.licht(groot ? 'rustig' : 'rustig'); S.publiek(0.3);
+      teller(q, sc.stadium); S.licht('rustig'); S.publiek(0.3);
       if (pot) S.pot.zet(potAantal(q));
       if (c.animeer) geluid.open();
       if (c.nieuw && wilBeeld(q) && !MEDIA[q.id]) melding('Geen video voor deze vraag. Klik rechtsonder op het mapje en kies de map met je video\'s.');
       sr(sc.stadium === 'vraag' ? vraagTekst(q) : `${titelVan(q)}. Zet eerst in.`);
-      controleer(sc, (qq) => sc.stadium === 'vraag' && qq.modus !== 'waarde' && alleGeantwoord(qq));
       return;
     }
     lampen(); DUOS.forEach((d) => { if (ingezet(inzT(q.id, d.id))) lamp(d.id, 'ingezet'); });
-    const plaques = (uitslag, stil) => DUOS.forEach((d) => { const x = inzT(q.id, d.id); plakkaat(d.id, { tekst: plaatTekst(q, x), stil, uitslag: uitslag && x && af(x) ? x.s : null }); });
-    if (f === 'dicht') {
-      onderPil(alleGeantwoord(q) ? 'Iedereen heeft geantwoord' : 'De vraag is dicht');
-      if (getal) lijnZet(q, false, c.animeer);
-      S.licht('spanning');
-      if (!c.animeer) { plaques(false, true); zetTafel(ctx); S.alleStaat(''); return; }
-      DUOS.forEach((d, k) => later(260 + k * 140, () => { const x = inzT(q.id, d.id); plakkaat(d.id, { tekst: plaatTekst(q, x) }); geluid.flap(); }));
-      zetTafel({ ...ctx, dek: true }); geluid.dicht();
-      S.alleStaat('oeh'); later(1500, () => S.alleStaat(''));
-      later(700, () => inzettenNaarCirkel(q, gok, sc));
+    if (resultaat) {
+      // de video met het resultaat groot in beeld; als hij klaar is (of met spatie) komt de uitslag
+      sc.videoSpeelt = true; zetTafel({ ...ctx, dek: true }); S.licht('rustig'); S.publiek(0.4); S.alleStaat('');
+      const g = geldig(), klaar = g(() => { if (!sc.videoSpeelt) return; sc.videoSpeelt = false; sc.videoKlaar = true; this.toon(sc, f, { nieuw: false, animeer: true }); });
+      const v = $('#dia video');
+      if (v) {
+        v.addEventListener('ended', klaar, { once: true });
+        v.addEventListener('error', () => later(800, klaar), { once: true });
+        try { v.currentTime = 0; } catch (e) { /* nog niet geladen */ }
+        v.play().catch(() => later(1500, klaar));
+      } else later(800, klaar);
+      later(60000, klaar);
+      sr(`Het resultaat. Kijk mee voor het antwoord.`);
       return;
     }
-    if (f === 'onthul') {
-      zetTafel(ctx); plaques(false, true); if (getal) lijnZet(q, false, false);
-      const n = nakijken(q);
-      if (n) { sc.wachtOpBank = true; onderPil(`De bank kijkt na: nog ${n} ${n === 1 ? 'antwoord' : 'antwoorden'}`); S.alleStaat(''); return; }
-      sc.wachtOpBank = false; this.onthul(sc, q, c.animeer);
+    const n = nakijken(q);
+    if (!c.animeer) {
+      zetTafel(ctx); if (getal) lijnZet(q, false, false);
+      if (n) { sc.wachtOpBank = true; DUOS.forEach((d) => plakkaat(d.id, { tekst: plaatTekst(q, inzT(q.id, d.id)), stil: true })); onderPil(bankTekst(n)); S.alleStaat(''); return; }
+      this.onthul(sc, q, false); this.betaal(sc, q, false);
       return;
     }
-    // uitbetaal
-    this.onthul(sc, q, false);
-    onderUitleg(uitlegVan(q));
-    const goedVan = (id) => { const x = inzT(q.id, id); return !!x && x.s === 'goed'; };
-    S.licht('show');
-    if (!c.animeer) { zetTafel({ ...ctx, betaald: true }); DUOS.forEach((d) => S.duoStaat(d.id, goedVan(d.id) || !inzT(q.id, d.id) ? '' : 'sip')); if (pot) { S.pot.zet(0); zetPotLabel(0); } return; }
-    zetTafel(ctx, { telLaten: true });
-    const duur = betaalUit(ctx, { ...ctx, betaald: true }, goedVan, pot ? 'pot' : 'bank');
-    if (pot) later(duur, () => { S.pot.zet(0); zetPotLabel(0); });
-    DUOS.forEach((d) => { if (goedVan(d.id)) { S.duoStaat(d.id, 'dans', 0.15); later(duur + 600, () => S.duoStaat(d.id, '')); } });
-    if (DUOS.some((d) => goedVan(d.id))) { geluid.applaus(2, 0.8); S.publiek(1.6); later(2600, () => S.publiek(0.6)); }
-    later(900, () => serveerShots(q));
-    if (q.modus === 'bank') later(400, () => bankNa(sc));
-    sr(uitlegVan(q) || 'Uitbetaald.');
+    // de vraag is dicht: de bordjes klappen om en de inzetten gaan naar de cirkel
+    onderPil(alleGeantwoord(q) ? 'Iedereen heeft geantwoord' : 'De vraag is dicht');
+    if (getal) lijnZet(q, false, true);
+    S.licht('spanning');
+    DUOS.forEach((d, k) => later(200 + k * 130, () => { plakkaat(d.id, { tekst: plaatTekst(q, inzT(q.id, d.id)) }); geluid.flap(); }));
+    zetTafel({ ...ctx, dek: true }); geluid.dicht();
+    S.alleStaat('oeh'); later(1500, () => S.alleStaat(''));
+    later(600, () => inzettenNaarCirkel(q, gok, sc));
+    sc.wachtOpBank = n ? 'straks' : false;
+    later(1600, () => {
+      const m = nakijken(q);
+      if (m) { sc.wachtOpBank = true; onderPil(bankTekst(m)); return; }
+      sc.wachtOpBank = false; this.onthulEnBetaal(sc, q);
+    });
   },
+  onthulEnBetaal(sc, q) { this.onthul(sc, q, true); later(3300, () => this.betaal(sc, q, true)); },
   onthul(sc, q, animeer) {
     const mc = q.soort === 'mc', getal = q.soort === 'getal';
     const goed = DUOS.filter((d) => (inzT(q.id, d.id) || {}).s === 'goed').map((d) => d.id);
     const antwoord = () => {
       const af = antwoordFoto(q), kader = $('#laag .foto-kader');
-      if (af && kader && !kader.classList.contains('is-antwoord')) { kader.innerHTML = diaBinnen(q, 'antwoord'); kader.classList.add('is-antwoord'); speelMedia(); }
+      if (af && kader && !kader.classList.contains('is-antwoord')) { kader.innerHTML = diaBinnen(q, 'antwoord'); kader.classList.add('is-antwoord'); if (!sc.videoKlaar) speelMedia(); }
       if (mc) {
         const o = $('#laag .opties'); if (!o || o.classList.contains('is-onthuld')) return;
         const l = q.letter || String(q.antwoord || '').trim().charAt(0);
@@ -6237,6 +6318,22 @@ SC.vraag = {
       reageer(q, true);
     });
   },
+  // de fiches gaan echt over de tafel
+  betaal(sc, q, animeer) {
+    const gok = gokVan(q.ronde), pot = q.modus === 'pot', ctx = { q, gok, stapelVoor: sc.stapelVoor };
+    const goedVan = (id) => { const x = inzT(q.id, id); return !!x && x.s === 'goed'; };
+    sc.betaald = true;
+    onderUitleg(uitlegVan(q));
+    if (!animeer) { zetTafel({ ...ctx, betaald: true }); DUOS.forEach((d) => S.duoStaat(d.id, goedVan(d.id) || !inzT(q.id, d.id) ? '' : 'sip')); if (pot) { S.pot.zet(0); zetPotLabel(0); } return; }
+    zetTafel(ctx, { telLaten: true });
+    const duur = betaalUit(ctx, { ...ctx, betaald: true }, goedVan, pot ? 'pot' : 'bank');
+    if (pot) later(duur, () => { S.pot.zet(0); zetPotLabel(0); });
+    DUOS.forEach((d) => { if (goedVan(d.id)) { S.duoStaat(d.id, 'dans', 0.15); later(duur + 600, () => S.duoStaat(d.id, '')); } });
+    if (DUOS.some((d) => goedVan(d.id))) { geluid.applaus(2, 0.8); S.publiek(1.6); later(2600, () => S.publiek(0.6)); }
+    later(900, () => serveerShots(q));
+    if (q.modus === 'bank') later(400, () => bankNa(sc));
+    sr(uitlegVan(q) || 'Uitbetaald.');
+  },
   update(sc, f, oud) {
     const q = vraag(sc.vid);
     if (f === 'open') {
@@ -6244,11 +6341,12 @@ SC.vraag = {
       if (sc.stadium === 'inzet' && alleIngezet(q)) { sc.stadium = volgStadium(q, 'inzet'); this.toon(sc, f, { nieuw: false, animeer: false }); return; }
       teller(q, sc.stadium);
       if (q.modus === 'waarde' && oud && oud.waarde !== DB.waarde) waardeZet(q);
-      controleer(sc, (qq) => sc.stadium === 'vraag' && qq.modus !== 'waarde' && alleGeantwoord(qq));
-    } else if (f === 'onthul' && sc.wachtOpBank) {
+      return;
+    }
+    if (sc.wachtOpBank === true) {
       const n = nakijken(q);
-      if (!n) { sc.wachtOpBank = false; this.onthul(sc, q, true); } else onderPil(`De bank kijkt na: nog ${n} ${n === 1 ? 'antwoord' : 'antwoorden'}`);
-    } else if (f === 'uitbetaal' && q.modus === 'bank') bankNa(sc);
+      if (!n) { sc.wachtOpBank = false; this.onthulEnBetaal(sc, q); } else onderPil(bankTekst(n));
+    } else if (sc.betaald && q.modus === 'bank') bankNa(sc);
   },
   spatie(sc, f) {
     const q = vraag(sc.vid);
@@ -6256,6 +6354,7 @@ SC.vraag = {
     if (f === 'open' && q.modus === 'waarde' && DB && DB.vraag_id === q.id && DB.fase === 'open' && DB.waarde > 1) {
       geluid.zoef(); host('quiz_host_waarde', { p_waarde: DB.waarde - 1 }).then(() => ververs()).catch((e) => melding(e.message)); return true;
     }
+    if (f === 'onthul' && sc.videoSpeelt) { sc.videoSpeelt = false; sc.videoKlaar = true; this.toon(sc, f, { nieuw: false, animeer: true }); return true; }
     if (f === 'onthul' && sc.wachtOpBank) { melding('De bank kijkt nog na. De show gaat zelf verder zodra alles is nagekeken.'); return true; }
     return false;
   },
@@ -6284,37 +6383,70 @@ function bankNa(sc) {
   sc.fichesVoor = Object.fromEntries(DUOS.map((d) => [d.id, teamS(d.id).fiches]));
 }
 
+// De sukkelboete die de bank heeft geboekt (quiz_host_rondegok). Zonder boekingen in de database: 0.
+const boeteVan = (ronde, tid) => (DB && DB.boek ? DB.boek.filter((b) => b.t === tid && b.r === 'Sukkel ' + ronde).reduce((s, b) => s - b.d, 0) : 0);
+const namenLijst = (l) => (l.length > 1 ? `${l.slice(0, -1).map((d) => d.naam).join(', ')} en ${l[l.length - 1].naam}` : l.length ? l[0].naam : '');
+
 SC.afrekening = {
-  fasen: ['scores', 'uitbetaal'],
+  // Ronde 1: één pagina. Sukkelronde: eerst wie de sukkel is, dan wie goed gokte, de uitbetaling en de boete.
+  fasen: (sc) => ((vraag(sc.vid) || {}).soort === 'sukkel' ? ['sukkel', 'uitbetaal'] : ['uitbetaal']),
   async actie(sc) { await host('quiz_host_rondegok', { p_ronde: sc.ronde }).catch((e) => melding(e.message)); },
   toon(sc, f, c) {
     const g = vraag(sc.vid), sukkel = g.soort === 'sukkel';
-    kop({ ronde: sc.ronde }); S.focus(null); iedereenThuis(); S.shot('vraag', c.nieuw ? 1.8 : 0.8); plakkatenWeg();
+    kop({ ronde: sc.ronde }); S.focus(null); iedereenThuis(); S.shot('vraag', c.nieuw ? 1.8 : 0.8); plakkatenWeg(); lampen();
     const score = (id) => rondeVragen(sc.ronde).filter((q) => (inzT(q.id, id) || {}).s === 'goed').length;
     const laagste = N ? Math.min(...DUOS.map((d) => score(d.id))) : 0, sukkels = DUOS.filter((d) => score(d.id) === laagste);
+    const een = (l, a, b) => (l.length === 1 ? a : b);
+    const rij = (id) => inzT(g.id, id), gewed = (id) => { const x = rij(id); return !!x && x.i > 0; }, goedVan = (id) => (rij(id) || {}).s === 'goed';
     const nog = rondeVragen(sc.ronde).reduce((n, q) => n + nakijken(q), 0);
-    const kopTekst = sukkel ? (sukkels.length === 1 ? `De sukkel: ${sukkels[0].naam}` : 'De sukkels') : 'De bank rekent af';
-    const uitleg = sukkel ? `${sukkels.map((d) => d.naam).join(' en ')} ${sukkels.length === 1 ? 'had' : 'hadden'} ${laagste} goed. Wie daarop gokte, krijgt de inzet verdubbeld.` : 'Minstens 6 goed? Dan verdubbelt de bank jullie inzet. Anders is de inzet weg.';
-    laag(`<div class="waas boven"></div>${middenKaart(`Afrekening ${sc.ronde.toLowerCase()}`, kopTekst, uitleg)}<div class="onder" id="onder">${nog ? `<span class="pil">De bank moet nog ${nog} ${nog === 1 ? 'antwoord' : 'antwoorden'} nakijken</span>` : ''}</div>`);
-    const rij = (id) => inzT(g.id, id), goedVan = (id) => (rij(id) || {}).s === 'goed';
+    const boetes = sukkel ? sukkels.map((d) => [d.id, boeteVan(sc.ronde, d.id)]).filter(([, b]) => b > 0) : [];
+    let titel, tekst;
+    if (f === 'sukkel') {
+      titel = sukkels.length === 1 ? `De sukkel: ${sukkels[0].naam}` : 'De sukkels';
+      tekst = `${namenLijst(sukkels)} ${een(sukkels, 'had', 'hadden')} maar ${laagste} goed en ${een(sukkels, 'betaalt', 'betalen')} 3 fiches aan de bank.`;
+    } else if (sukkel) {
+      const raak = DUOS.filter((d) => gewed(d.id) && goedVan(d.id));
+      titel = 'Wie gokte goed?';
+      tekst = raak.length ? `${namenLijst(raak)} ${een(raak, 'gokte', 'gokten')} op de sukkel: inzet verdubbeld. De rest is de inzet kwijt.` : 'Niemand gokte op de sukkel. Alle inzetten gaan naar de bank.';
+    } else {
+      const gehaald = DUOS.filter((d) => gewed(d.id) && score(d.id) >= 6);
+      titel = 'Minstens 6 goed?';
+      tekst = gehaald.length ? `Gehaald: ${namenLijst(gehaald)}. De bank verdubbelt de inzet. De rest is de inzet kwijt.` : 'Niemand haalde 6 goed. Alle inzetten gaan naar de bank.';
+    }
+    laag(`<div class="waas boven"></div>${middenKaart(`Afrekening ${sc.ronde.toLowerCase()}`, titel, tekst)}<div class="onder" id="onder">${nog ? `<span class="pil">De bank moet nog ${nog} ${nog === 1 ? 'antwoord' : 'antwoorden'} nakijken</span>` : ''}</div>`);
+    sr(`${titel}. ${tekst}`);
+    // de bordjes: de scores, in de sukkelronde daarna op wie je gokte
     DUOS.forEach((d, k) => {
-      const x = rij(d.id), tekst = sukkel ? plaatTekst(g, x) : `${score(d.id)} goed`, u = x && x.i > 0 && af(x) ? x.s : null;
-      const zet = () => { plakkaat(d.id, { tekst, stil: !(c.animeer && f === 'scores'), uitslag: u }); lamp(d.id, u); };
-      if (c.animeer && f === 'scores') later(300 + k * 260, () => { zet(); geluid.flap(); }); else zet();
+      const x = rij(d.id), t = f === 'uitbetaal' && sukkel ? plaatTekst(g, x) : `${score(d.id)} goed`;
+      const u = f === 'sukkel' ? (sukkels.includes(d) ? 'fout' : null) : x && x.i > 0 && af(x) ? x.s : null;
+      const zet = () => { plakkaat(d.id, { tekst: t, stil: !c.animeer, uitslag: u }); lamp(d.id, u); };
+      if (c.animeer) later(300 + k * 240, () => { zet(); geluid.flap(); }); else zet();
     });
-    if (f === 'scores') {
-      zetTafel({ gok: g }); S.licht('show');
-      if (c.animeer) { S.alleStaat('oeh'); later(1800, () => S.alleStaat('')); } else S.alleStaat('');
-      sr(`${kopTekst}. ${uitleg}`);
+    if (f === 'sukkel') {
+      zetTafel({ gok: g }); S.licht('show'); S.alleStaat('');
+      const sip = () => { sukkels.forEach((d) => S.duoStaat(d.id, 'sip', 0.2)); S.focus(sukkels.map((d) => d.id), { dim: 0.6 }); };
+      if (c.animeer) { S.alleStaat('oeh'); later(300 + N * 240 + 300, () => { S.alleStaat(''); sip(); geluid.oeh(); }); } else sip();
       return;
     }
-    if (!c.animeer) { zetTafel({ gok: g, gokBetaald: true }); DUOS.forEach((d) => S.duoStaat(d.id, (rij(d.id) || {}).i > 0 && !goedVan(d.id) ? 'sip' : '')); return; }
-    zetTafel({ gok: g }, { telLaten: true }); geluid.trom(1.1);
-    later(1200, () => {
-      geluid.goed();
-      betaalUit({ gok: g }, { gok: g, gokBetaald: true }, goedVan, 'bank');
-      DUOS.forEach((d) => { const x = rij(d.id); if (!x || !(x.i > 0)) return; if (goedVan(d.id)) { S.duoStaat(d.id, 'dans', 0.15); S.confettiRegen(d.id, 140); later(3600, () => S.duoStaat(d.id, '')); } else S.duoStaat(d.id, 'sip'); });
-      S.licht('feest'); S.publiek(1.8); geluid.juich(2.6, 0.8); later(2600, () => { S.licht('show'); S.publiek(0.7); });
+    if (!c.animeer) { zetTafel({ gok: g, gokBetaald: true }); DUOS.forEach((d) => S.duoStaat(d.id, (gewed(d.id) && !goedVan(d.id)) || boetes.some(([id]) => id === d.id) ? 'sip' : '')); return; }
+    zetTafel({ gok: g }, { telLaten: true });
+    const gg = geldig();
+    later(300 + N * 240 + 200, () => {
+      geluid.trom(1.1);
+      later(1200, () => {
+        geluid.goed();
+        const duur = betaalUit({ gok: g }, { gok: g, gokBetaald: true, boeteNog: true }, goedVan, 'bank');
+        DUOS.forEach((d) => { if (!gewed(d.id)) return; if (goedVan(d.id)) { S.duoStaat(d.id, 'dans', 0.15); S.confettiRegen(d.id, 140); later(3600, () => S.duoStaat(d.id, '')); } else S.duoStaat(d.id, 'sip'); });
+        if (DUOS.some((d) => gewed(d.id) && goedVan(d.id))) { S.licht('feest'); S.publiek(1.8); geluid.juich(2.6, 0.8); later(2600, () => { S.licht('show'); S.publiek(0.7); }); }
+        // daarna betaalt de sukkel de boete aan de bank
+        if (boetes.length) later(duur + 200, () => {
+          geluid.oeh(); S.licht('fout'); later(1800, () => S.licht('show'));
+          boetes.forEach(([id, b], k) => later(k * 300, () => {
+            S.duoStaat(id, 'sip', 0.2); plus(id, `Sukkel −${b}`, true);
+            S.stapelNaarBank(id, b).then(gg(() => { const p = plaats(id, { gok: g, gokBetaald: true }); S.zetFiches(id, p.stapel); S.zetInzet(id, p.cirkel); tel(id).zet(p.stapel + p.cirkel, true); }));
+          }));
+        });
+      });
     });
   },
 };
@@ -6552,7 +6684,7 @@ async function ververs(metUpdate = true) {
 }
 async function naar(n, vooruit = false) {
   if (n < 0 || n >= STAPPEN.length || bezig) return;
-  bezig = true; autoPos = -1;
+  bezig = true;
   try {
     stopKlokken(); liedje.stop();
     const { i, f } = STAPPEN[n], sc = SCRIPT[i], impl = SC[sc.type];

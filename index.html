@@ -338,7 +338,7 @@ function tekenTeam() {
     } else if ((v.soort === "inzet" || v.soort === "sukkel") && uit && !m) {
       h += `<p class="sub midden">Uit de strijd: bij deze vraag hoeven jullie niet te gokken.</p>`;
     } else if (v.soort === "sukkel" && d.fase === "open") {
-      h += `<p class="sub">Kies een duo (niet jezelf) en je inzet. Goed gegokt is inzet verdubbeld, mis is inzet kwijt.</p>
+      h += `<p class="sub">Kies een duo (niet jezelf) en je inzet. Goed gegokt is inzet verdubbeld, mis is inzet kwijt. Het slechtste duo van de ronde betaalt zelf 3 fiches aan de bank.</p>
         <div class="opties">${(d.anderen || []).map((t) => `<button class="optie ${gekozen === String(t.id) ? "gekozen" : ""}" data-o="${t.id}"><b>${t.id}</b>${esc(t.naam)}</button>`).join("")}</div>
         <div class="inzet">${range(v.inzet_min, v.inzet_max).map((n) => `<button data-i="${n}" class="${inzetKeuze === n ? "gekozen" : ""}">${n}</button>`).join("")}</div>
         <button class="breed" id="stuur" ${bezig ? "disabled" : ""}>Verstuur</button>${fout ? `<div class="fouttekst">${esc(fout)}</div>` : ""}`;
@@ -352,7 +352,7 @@ function tekenTeam() {
       } else {
         if (vooraf) h += `<p class="sub">Inzet staat vast: <b>${m.inzet}</b> ${m.inzet === 1 ? "fiche" : "fiches"}.</p>`;
         if (v.modus === "waarde") h += `<p class="sub">${uit ? "" : `Nu goed = <b>${d.waarde}</b> ${d.waarde === 1 ? "fiche" : "fiches"}. `}Eén poging per foto.</p>`;
-        if (v.modus === "race" && !uit) h += `<p class="sub">De race: eerste goede 3 fiches, tweede 2, daarna 1. Eén poging.</p>`;
+        if (v.modus === "race" && !uit) h += `<p class="sub">De race: eerste goede 3 fiches, tweede 2, alle andere goede 1. Eén poging.</p>`;
         if (v.modus === "pot" && !uit) h += `<p class="sub">De pot: je legt 1 fiche in. Wie het dichtst zit, pakt de pot.</p>`;
         if (v.modus === "bank" && d.bank && !uit) h += `<p class="sub">Je stapel: <b>${d.bank.stapel}</b>. Goed levert nu ${d.bank.reeks + 1} op, fout en je stapel is weg.</p>`;
         if (v.soort === "mc") h += `<div class="opties mc">${v.opties.map(([l, t]) => `<button class="optie mc-${l} ${gekozen === l ? "gekozen" : ""}" data-o="${l}"><b>${l}</b>${esc(t)}</button>`).join("")}</div>`;
@@ -456,7 +456,7 @@ function tekenBank() {
     if (v.modus === "waarde" && meer) h += `<div class="rij" style="margin-top:10px"><small>Waarde nu:</small>${[3, 2, 1].map((n, i) => `<button class="klein ${d.waarde === n ? "" : "stil"}" data-w="${n}">Stap ${i + 1} · ${n}</button>`).join("")}</div>`;
     if (v.modus === "pot" && meer) h += `<div class="rij" style="margin-top:10px"><button class="groen" id="pot">Reken de pot uit</button><small>Dichtstbij pakt de pot, iedereen legt 1 in.</small></div>`;
     if (v.modus === "bank" && (meer || (laatste && d.fase !== "open"))) h += `<div class="rij" style="margin-top:10px"><button class="groen klein" id="bankalles">Einde ronde: alle stapels banken</button></div>`;
-    if ((v.ronde === "Ronde 1" || v.ronde === "Ronde 3") && (meer || (laatste && d.fase !== "open"))) h += `<div class="rij" style="margin-top:10px"><button class="groen klein" id="rondegok">Einde ronde: reken de rondegok af</button><small>${v.ronde === "Ronde 1" ? "Minstens 6 goed = inzet verdubbeld." : "Wie op het slechtste duo wedde, wint."}</small></div>`;
+    if ((v.ronde === "Ronde 1" || v.ronde === "Ronde 3") && (meer || (laatste && d.fase !== "open"))) h += `<div class="rij" style="margin-top:10px"><button class="groen klein" id="rondegok">Einde ronde: reken de rondegok af</button><small>${v.ronde === "Ronde 1" ? "Minstens 6 goed = inzet verdubbeld." : "Wie op het slechtste duo wedde, wint. Het slechtste duo betaalt 3 fiches."}</small></div>`;
     h += `<table style="margin-top:12px"><tr><th>Team</th><th>Antwoord</th><th>Tijd</th><th>Inzet</th><th></th><th></th></tr>
       ${d.inzendingen.length ? d.inzendingen.map((i) => `<tr><td><b>${esc(i.team)}</b></td><td>${i.antwoord === null ? "<small>alleen inzet</small>" : esc(i.antwoord)}</td><td>${i.ms == null ? "" : (i.ms / 1000).toFixed(1) + " s"}</td>
         <td>${v.modus === "waarde" ? i.waarde : i.inzet || ""}</td><td><span class="tag ${i.status}">${i.status === "inzet" ? "inzet" : i.status}${i.status === "goed" || i.status === "fout" ? " " + (i.delta > 0 ? "+" : "") + i.delta : ""}</span>${i.shot === "ja" ? " 🥃" : ""}</td>
