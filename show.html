@@ -541,6 +541,59 @@ button { font: inherit; }
 .duel-tijd:empty { visibility: hidden; }
 .duel-tijd.is-bijna { color: #fff; background: radial-gradient(circle at 40% 35%, #FF8C9A, #C8283F 60%, #7A1020); }
 @media (prefers-reduced-motion: reduce) { .duel { animation: none !important; } }
+
+/* ---------- de grote popup: vraag en antwoord groot midden in beeld, leesbaar op elke tv ----------
+   Het vak is 1680x945 (16:9, 87,5% van het beeld) en blijft binnen de rand die sommige tv's wegsnijden. */
+.dia { left: 120px; top: 52px; width: 1680px; height: 945px; transform: none; }
+.dia ~ .groot-onder, .pop .groot-onder { top: 997px; left: 120px; right: 120px; transform: translateY(-50%); }
+.pop { position: absolute; inset: 0; }
+.pop.is-zacht > .waas { animation: none; }
+.pop.is-vast .pop-vak { animation: none; }
+.pop-tab { position: absolute; left: 50%; top: 52px; z-index: 2; transform: translate(-50%, -50%); padding: 11px 26px; border-radius: 999px; font: 800 26px/1 var(--tekst); font-variant-numeric: tabular-nums; color: var(--inkt); background: linear-gradient(180deg, #FFE9A8, #E9B949 55%, #B98A35); box-shadow: 0 0 0 3px rgba(4, 22, 27, .85), 0 8px 24px rgba(0, 0, 0, .5); white-space: nowrap; }
+.pop-vak { transform-origin: 50% 0; transition: transform .75s cubic-bezier(.2, .9, .25, 1); }
+.pop.met-lint .pop-vak { transform: scale(.84); }
+.pop.met-lint .groot-onder { display: none; }
+.dia.is-antwoord > img { animation: flipIn .9s cubic-bezier(.2, .9, .25, 1.3) both; transform-origin: 50% 100%; }
+
+/* het antwoord: een groen lint onder de dia (of de getallenlijn) */
+.pop-lint { position: absolute; left: 254px; right: 254px; top: 868px; min-height: 124px; box-sizing: border-box; padding: 24px 48px 20px; display: grid; place-items: center; border-radius: 22px; color: #fff; text-align: center; background: linear-gradient(180deg, #23A07A, #12654D); box-shadow: inset 0 0 0 3px var(--goud-licht), 0 0 0 5px rgba(233, 185, 73, .45), 0 0 60px rgba(53, 181, 138, .5), 0 20px 50px rgba(0, 0, 0, .6); visibility: hidden; opacity: 0; transform: translateY(46px) scale(.94); }
+.pop.met-lint .pop-lint { visibility: visible; opacity: 1; transform: none; transition: opacity .45s .3s, transform .8s .3s cubic-bezier(.2, .9, .3, 1.3); }
+.pop-lint b { display: block; max-width: 100%; font: 900 80px/1.05 var(--tekst); letter-spacing: -.01em; text-wrap: balance; overflow-wrap: anywhere; }
+.lint-label { position: absolute; left: 50%; top: 0; transform: translate(-50%, -55%); padding: 9px 20px; border-radius: 999px; font: 800 24px/1 var(--tekst); color: #fff; background: var(--eozine); box-shadow: 0 0 0 3px #12654D, 0 6px 16px rgba(0, 0, 0, .35); white-space: nowrap; }
+
+/* de grote kaart: meerkeuze, schatting of open vraag zonder dia (--k maakt alles samen kleiner als het niet past) */
+.kaart.is-pop { --k: 1; left: 120px; right: 120px; top: 52px; height: 945px; box-sizing: border-box; padding: 84px 100px 92px; gap: calc(54px * var(--k)); }
+.kaart.is-pop .hoek { width: 54px; height: 54px; }
+.kaart.is-pop .vraagtekst { font-size: calc(80px * var(--k)); line-height: 1.1; }
+.kaart.is-pop .opties { grid-template-columns: 1fr 1fr; gap: calc(30px * var(--k)) 34px; }
+.kaart.is-pop .optie { min-height: calc(160px * var(--k)); padding: 18px 34px 18px 24px; border-radius: 28px; gap: 28px; }
+.kaart.is-pop .optie .ol { width: calc(104px * var(--k)); height: calc(104px * var(--k)); font-size: calc(54px * var(--k)); }
+.kaart.is-pop .optie .ot { font-size: calc(58px * var(--k)); line-height: 1.06; }
+.kaart.is-pop .optie .keuze { right: 22px; top: -34px; }
+.kaart.is-pop .optie .keuze .fiche { width: 64px; height: 64px; margin-left: -20px; }
+.kaart.is-pop.is-open-vraag .antwoord-slot { min-height: 190px; align-items: center; }
+.kaart.is-pop .onthulling { font-size: 112px; padding: 16px 64px 22px; }
+.kaart.is-pop .onthulling.is-lang { font-size: 72px; }
+.kaart.is-pop.is-pot { justify-content: center; padding-top: 70px; gap: calc(40px * var(--k)); }
+.kaart.is-pop.is-pot .vraagtekst { font-size: calc(68px * var(--k)); }
+
+/* de getallenlijn in de popup: alles anderhalf keer zo groot */
+.is-pop .getallijn { height: 350px; margin: 0 60px; }
+.is-pop .getallijn .as { top: 206px; height: 9px; border-radius: 5px; }
+.is-pop .streep { top: 197px; width: 3px; height: 27px; margin-left: -1.5px; }
+.is-pop .streep span { top: 58px; font-size: 30px; }
+.is-pop .marker { top: 173px; width: 76px; height: 76px; margin-left: -38px; }
+.is-pop .marker .fiche { width: 76px; height: 76px; }
+.is-pop .marker .gok { bottom: calc(100% + 16px); font-size: 38px; padding: 8px 13px; border-radius: 10px; }
+.is-pop .marker .gok::after { width: 3px; height: 16px; margin-left: -1.5px; }
+.is-pop .marker.rij2 .gok { bottom: calc(100% + 84px); }
+.is-pop .marker.rij2 .gok::after { height: 84px; }
+.is-pop .pin-goud { top: 28px; width: 6px; height: 214px; margin-left: -3px; }
+.marker.is-winnaar { z-index: 5; }   /* het label van de winnaar boven de gouden pin */
+.is-pop .pin-goud b { top: calc(100% + 12px); font-size: 58px; padding: 10px 26px 9px; border-radius: 16px; }
+@media (prefers-reduced-motion: reduce) { .pop-vak, .pop.met-lint .pop-lint, .dia.is-antwoord > img { transition: none !important; animation: none !important; } }
+/* zolang de popup staat: de kaarten van de studio erachter niet laten doorschemeren */
+#laag:has(> .pop:not(.is-weg)) > :not(.pop) { visibility: hidden; }
 </style></head><body><div id="podium"><div id="stage">
   <canvas id="gl" aria-hidden="true"></canvas>
   <div id="labels" aria-hidden="true"></div>
@@ -589,7 +642,7 @@ button { font: inherit; }
   <div class="doos porselein">
     <h2 id="hulp-kop">Bediening</h2>
     <dl>
-      <dt><kbd>Spatie</kbd> <kbd>→</kbd></dt><dd>Volgende stap. Bij een vraag: eerst de vraag, de volgende klik sluit hem en toont het antwoord met de uitbetaling. Een klik op het scherm of een presenter-clicker werkt ook.</dd>
+      <dt><kbd>Spatie</kbd> <kbd>→</kbd></dt><dd>Volgende stap. Bij een vraag: eerst de vraag groot in beeld, de volgende klik sluit hem en toont het antwoord groot. Na een paar seconden gaat het vanzelf door naar de uitbetaling; met een klik gaat dat meteen. Een klik op het scherm of een presenter-clicker werkt ook.</dd>
       <dt><kbd>←</kbd></dt><dd>Een stap terug, alleen om iets opnieuw te tonen. Een gesloten vraag gaat niet opnieuw open. Bij de BN'ers gaat de foto een stap terug.</dd>
       <dt><kbd>F</kbd></dt><dd>Volledig scherm aan of uit.</dd>
       <dt><kbd>M</kbd></dt><dd>Geluid aan of uit.</dd>
@@ -5763,14 +5816,14 @@ function maakTelbord(d) {
 }
 const GEEN = { zet() {}, klaar() {}, zicht() {}, uit() {} };
 const tel = (id) => telborden.get(id) || GEEN;
-function vraagKaartHTML(q, metDia) {
+function vraagKaartHTML(q, metDia, extra = '') {
   const mc = q.soort === 'mc', getal = q.soort === 'getal';
   if (metDia && !mc) return getal
-    ? `<div class="kaart porselein is-pot is-naast">${HOEKEN}<span class="gok-label">De schattingen</span><div class="getallijn" id="lijn"></div></div>`
+    ? `<div class="kaart porselein is-pot is-naast">${HOEKEN}<span class="gok-label">De schattingen</span><div class="getallijn"></div></div>`
     : `<div class="kaart porselein is-open-vraag is-naast">${HOEKEN}<span class="gok-label">Het antwoord</span><div class="antwoord-slot"></div></div>`;
-  return `<div class="kaart porselein ${mc ? 'is-mc' : getal ? 'is-pot' : 'is-open-vraag'}">${HOEKEN}<p class="vraagtekst">${esc(vraagTekst(q))}</p>
+  return `<div class="kaart porselein ${mc ? 'is-mc' : getal ? 'is-pot' : 'is-open-vraag'}${extra ? ' ' + extra : ''}">${HOEKEN}<p class="vraagtekst">${esc(vraagTekst(q))}</p>
     ${mc ? `<div class="opties">${(q.opties || []).map(([l, t]) => `<div class="optie" data-l="${esc(l)}"><span class="ol">${esc(l)}</span><span class="ot">${esc(t)}</span><span class="keuze"></span></div>`).join('')}</div>`
-      : getal ? '<div class="getallijn" id="lijn"></div>' : '<div class="antwoord-slot"></div>'}</div>`;
+      : getal ? '<div class="getallijn"></div>' : '<div class="antwoord-slot"></div>'}</div>`;
 }
 function pasVraag() {
   const t = $('#laag .kaart .vraagtekst'); if (!t) return;
@@ -5778,7 +5831,7 @@ function pasVraag() {
   let g = 24; while (kaart.scrollHeight > kaart.clientHeight + 2 && px > 28 && g--) { px -= 3; t.style.fontSize = px + 'px'; }
 }
 const middenKaart = (label, titel, tekst) => `<div class="midden-kaart porselein">${HOEKEN}${label ? `<span class="gok-label">${esc(label)}</span>` : ''}<h2>${esc(titel)}</h2>${tekst ? `<p>${esc(tekst)}</p>` : ''}</div>`;
-const onderPil = (t) => { const o = $('#onder'); if (o) o.innerHTML = t ? `<span class="pil">${esc(t)}</span>` : ''; };
+const onderPil = (t) => ['#onder', '#pop-onder'].forEach((s) => { const o = $(s); if (o) o.innerHTML = t ? `<span class="pil">${esc(t)}</span>` : ''; });
 const onderUitleg = (t) => { const o = $('#onder'); if (o) o.innerHTML = t ? `<p class="uitleg">${esc(t)}</p>` : ''; };
 const kaarten = new Map();
 function plakkaat(id, o) {
@@ -5928,22 +5981,27 @@ function getalUit(t) {
   return v;
 }
 function lijnZet(q, onthuld, anim) {
-  const lijn = $('#lijn'); if (!lijn) return;
+  // de lijn op de kaart in de studio en (tijdens het onthullen) de grote lijn in de popup
+  const lijnen = $$('#laag .getallijn'); if (!lijnen.length) return;
   const rijen = inzVan(q.id).filter((x) => x.a != null && x.g != null && isFinite(Number(x.g)));
   const doel = q.getal != null ? Number(q.getal) : getalUit(q.antwoord), ws = rijen.map((x) => Math.max(0, Number(x.g)));
   const basis = Math.max(doel || 0, ...ws.filter((w) => doel == null || w <= doel * 3), 1) * 1.08;
   const ruw = basis / 5, mag = 10 ** Math.floor(Math.log10(ruw)), stap = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= ruw) || mag * 10;
   const max = Math.ceil(basis / stap) * stap, X = (v) => `${(Math.min(v, max) / max) * 100}%`;
-  let h = '<div class="as"></div>';
-  for (let k = 0; k * stap <= max + stap / 2; k++) h += `<i class="streep" style="left:${X(k * stap)}"><span>${fmtGetal(k * stap)}</span></i>`;
-  const breed = lijn.clientWidth || 1200; let vorige = -1e9, rij = 0;
-  rijen.slice().sort((a, b) => Number(a.g) - Number(b.g)).forEach((x, k) => {
-    const v = Math.max(0, Number(x.g)), px = (Math.min(v, max) / max) * breed, d = DUO(x.t) || { kleur: '#888' };
-    rij = px - vorige < 86 ? 1 - rij : 0; vorige = px;
-    h += `<div class="marker${rij ? ' rij2' : ''}${anim && !onthuld ? ' is-in' : ''}${onthuld && x.s === 'goed' ? ' is-winnaar' : ''}" style="left:${X(v)};--c:${d.kleur};animation-delay:${anim ? (k * 0.14).toFixed(2) : 0}s"><span class="gok">${v > max ? '≫ ' : ''}${esc(fmtGetal(v))}</span><div class="fiche" style="--c:${d.kleur}"></div></div>`;
+  const volgorde = rijen.slice().sort((a, b) => Number(a.g) - Number(b.g));
+  lijnen.forEach((lijn) => {
+    let h = '<div class="as"></div>';
+    for (let k = 0; k * stap <= max + stap / 2; k++) h += `<i class="streep" style="left:${X(k * stap)}"><span>${fmtGetal(k * stap)}</span></i>`;
+    // in de popup zijn de labels groter, dus moeten ze eerder om en om
+    const breed = lijn.clientWidth || 1200, ruimte = lijn.closest('.is-pop') ? 128 : 86; let vorige = -1e9, rij = 0;
+    volgorde.forEach((x, k) => {
+      const v = Math.max(0, Number(x.g)), px = (Math.min(v, max) / max) * breed, d = DUO(x.t) || { kleur: '#888' };
+      rij = px - vorige < ruimte ? 1 - rij : 0; vorige = px;
+      h += `<div class="marker${rij ? ' rij2' : ''}${anim && !onthuld ? ' is-in' : ''}${onthuld && x.s === 'goed' ? ' is-winnaar' : ''}" style="left:${X(v)};--c:${d.kleur};animation-delay:${anim ? (k * 0.14).toFixed(2) : 0}s"><span class="gok">${v > max ? '≫ ' : ''}${esc(fmtGetal(v))}</span><div class="fiche" style="--c:${d.kleur}"></div></div>`;
+    });
+    if (onthuld && doel != null) h += `<div class="pin-goud" style="left:${X(doel)}"><b>${esc(q.antwoord || fmtGetal(doel))}</b></div>`;
+    lijn.innerHTML = h; lijn.classList.toggle('is-onthuld', !!onthuld);
   });
-  if (onthuld && doel != null) h += `<div class="pin-goud" style="left:${X(doel)}"><b>${esc(q.antwoord || fmtGetal(doel))}</b></div>`;
-  lijn.innerHTML = h; lijn.classList.toggle('is-onthuld', !!onthuld);
 }
 
 /* ---------- beeldmap (foto's en video's blijven op deze laptop) ---------- */
@@ -6279,9 +6337,61 @@ function vraagHTML(q, stadium, groot, foto) {
 // heeft deze vraag een video met het resultaat (de antwoorddia met een video erin)?
 const heeftAntwoordVideo = (q) => { const d = DIA[q.id], m = MEDIA[q.id]; return !!(d && d.antwoord && d.vlak && m && m.antwoord && m.antwoord.video); };
 
+/* ---------- de grote popup ----------
+   De vraag en daarna het antwoord staan groot midden in beeld, zodat ze op elke tv te lezen zijn.
+   Na het antwoord schuift de popup weg: dan zie je de studio met de bordjes, de desks en de uitbetaling. */
+const POP_HOUD = 8000;   // zo lang blijft het antwoord groot staan; → gaat meteen door naar de uitbetaling
+function popRol(q, f, stadium) {
+  if (q.soort === 'mc' && !(DIA[q.id] && DIA[q.id].vlak)) return null;   // meerkeuze: de grote kaart met de gekleurde opties
+  if (f !== 'open' && q.soort === 'getal') return null;                  // na het sluiten: de schattingen op de getallenlijn
+  return diaRol(q, f === 'open' ? stadium : 'vraag');
+}
+const popBinnen = (q, rol) => (rol ? `<div class="dia pop-vak" id="dia">${diaBinnen(q, rol)}</div>` : vraagKaartHTML(q, false, 'is-pop pop-vak'));
+function popHTML(q, binnen, o = {}) {
+  const alle = rondeVragen(q.ronde), nr = alle.indexOf(q) + 1;
+  const tab = nr && alle.length > 1 ? `<span class="pop-tab">Vraag ${nr} van ${alle.length}</span>` : '';
+  const onder = o.open ? `<div class="groot-onder" id="onder">${o.onder || ''}<span class="pil" id="teller"></span></div>` : '<div class="groot-onder" id="pop-onder"></div>';
+  return `<div class="pop${o.zacht ? ' is-zacht' : ''}${o.vast ? ' is-vast' : ''}" id="pop"><div class="waas donker"></div>${tab}${binnen}<div class="pop-lint" id="pop-lint"></div>${onder}</div>`;
+}
+// lange vragen of opties: alles op de grote kaart iets kleiner tot het past
+function pasPop() {
+  const k = $('#pop .kaart'); if (!k) return;
+  let f = 1; k.style.setProperty('--k', '1');
+  while (k.scrollHeight > k.clientHeight + 2 && f > 0.56) { f -= 0.04; k.style.setProperty('--k', f.toFixed(2)); }
+}
+// het antwoord in het lint: zo groot mogelijk, maar het lint blijft ruim boven de onderrand van de tv
+// (één regel tot 80px, twee regels tot ongeveer 52px)
+function pasLint() {
+  const b = $('#pop-lint b'); if (!b) return;
+  let px = 80; b.style.fontSize = px + 'px';
+  while (px > 36 && (b.scrollWidth > b.clientWidth + 1 || b.offsetHeight > 112)) { px -= 4; b.style.fontSize = px + 'px'; }
+}
+// De vraag gaat dicht: dezelfde vraag blijft groot staan, de studio (bordjes, fiches) wacht erachter.
+function popOp(sc, q, vanuitOpen) {
+  if ($('#pop')) return;
+  $('#laag').insertAdjacentHTML('beforeend', popHTML(q, popBinnen(q, popRol(q, 'onthul')), { zacht: vanuitOpen, vast: vanuitOpen && q.soort !== 'getal' }));
+  pasPop(); sc.popSinds = performance.now(); kop(null);
+}
+// Het antwoord in de popup: de antwoorddia (als die er is) en eronder het antwoord groot in een lint.
+// Meerkeuze: het goede vak licht op. Open vraag zonder dia: het antwoord verschijnt op de kaart zelf.
+function popOnthul(sc, q) {
+  const p = $('#pop'); if (!p || sc.pop !== 'vraag') return;
+  sc.pop = 'antwoord';
+  const d = $('#pop .dia'), af = antwoordFoto(q), vak = $('#pop .pop-vak');
+  if (d && af) { d.innerHTML = diaBinnen(q, 'antwoord'); d.classList.add('is-antwoord'); }
+  if (d || q.soort === 'getal') {
+    $('#pop-lint').innerHTML = `<span class="lint-label">Het antwoord</span><b>${esc(q.antwoord || '')}</b>`;
+    if (vak) { vak.style.animation = 'none'; void vak.offsetWidth; }   // zodat het verkleinen soepel loopt
+    p.classList.add('met-lint'); pasLint();
+  }
+  p.classList.add('is-antwoord');
+  const m = $('#melding'); if (m) m.hidden = true;   // geen melding over het antwoord heen
+}
+
 SC.vraag = {
-  // open: de vraag. onthul: één klik voor de rest. De vraag gaat dicht, de bordjes klappen om,
-  // dan het goede antwoord en meteen de uitbetaling. Heeft de vraag een resultaatvideo, dan speelt die eerst groot.
+  // open: de vraag, altijd als grote popup. onthul: één klik voor de rest. De vraag gaat dicht, het antwoord
+  // komt groot in de popup, daarna schuift de popup weg en zie je de bordjes en de uitbetaling in de studio.
+  // Heeft de vraag een resultaatvideo, dan speelt die eerst schermvullend.
   fasen: ['open', 'onthul'],
   async actie(sc, f) {
     const q = vraag(sc.vid);
@@ -6292,28 +6402,39 @@ SC.vraag = {
   toon(sc, f, c) {
     const q = vraag(sc.vid), gok = gokVan(q.ronde), pot = q.modus === 'pot', getal = q.soort === 'getal';
     if (c.nieuw) {
-      sc.layout = ''; sc.stadium = beginStadium(q, f); plakkatenWeg();
+      sc.layout = ''; sc.stadium = beginStadium(q, f); plakkatenWeg(); sc.pop = null;
       if (!sc.stapelVoor) { sc.stapelVoor = Object.fromEntries(DUOS.map((d) => [d.id, teamS(d.id).stapel || 0])); sc.fichesVoor = Object.fromEntries(DUOS.map((d) => [d.id, teamS(d.id).fiches])); }
     }
-    if (f === 'open') { sc.wachtOpBank = false; sc.betaald = false; sc.videoSpeelt = false; sc.videoKlaar = false; }
+    if (f === 'open') { sc.wachtOpBank = false; sc.betaald = false; sc.videoSpeelt = false; sc.videoKlaar = false; sc.pop = null; sc.popWeg = false; }
     else if (!c.animeer) { sc.wachtOpBank = false; sc.videoSpeelt = false; sc.videoKlaar = true; }
+    else if (sc.pop == null) { sc.pop = 'vraag'; sc.popWeg = false; }   // live onthullen: vraag en antwoord in de grote popup
     if (f !== 'open') sc.stadium = 'vraag';
     const resultaat = f === 'onthul' && c.animeer && !sc.videoKlaar && heeftAntwoordVideo(q);
-    const mcKaart = q.soort === 'mc' && !(DIA[q.id] && DIA[q.id].vlak);
-    const groot = f === 'open' && !mcKaart && !!diaRol(q, sc.stadium);
+    const rol = f === 'open' ? popRol(q, f, sc.stadium) : null;
+    // de finale heeft een eigen pagina: het verhaal, de rekeningen en de vraag samen
+    const finPagina = f === 'open' && sc.stadium === 'vraag' && q.ronde === 'Finale' && !!EXTRA.finale;
+    const popOpen = f === 'open' && !finPagina && (sc.stadium === 'vraag' || !!rol);
+    const popLive = f === 'onthul' && (sc.pop === 'vraag' || sc.pop === 'antwoord');
     laadVooruit(q.id);
-    kop(resultaat ? null : sc); S.focus(null); iedereenThuis();
+    kop(resultaat || popOpen || popLive ? null : sc); S.focus(null); iedereenThuis();
     const foto = f !== 'open' && q.soort !== 'mc' ? fotoVan(q) : null;
-    const layout = resultaat ? 'resultaat' : mcKaart ? 'kaart:mc' : (groot ? 'groot:' : 'kaart:') + (f === 'open' ? sc.stadium : 'vraag') + (foto ? ':foto' : '') + (groot && MEDIA[q.id] ? ':video' : '');
+    const layout = resultaat ? 'resultaat'
+      : popOpen ? `pop:${sc.stadium}:${rol ? 'dia' : q.soort}${MEDIA[q.id] ? ':video' : ''}`
+      : finPagina ? 'finale'
+      : f === 'open' ? 'kaart:' + sc.stadium
+      : q.soort === 'mc' ? 'kaart:mc' : 'kaart:vraag' + (foto ? ':foto' : '');
     if (sc.layout !== layout) {
       sc.layout = layout;
       if (resultaat) laag(`<div class="dia is-vol" id="dia">${diaBinnen(q, 'antwoord')}</div>`);
-      else {
-        laag((groot ? '<div class="waas donker"></div>' : '') + vraagHTML(q, f === 'open' ? sc.stadium : 'vraag', groot, foto));
-        pasVraag(); if (groot) speelMedia();
-      }
-      if (!groot && !resultaat && sc.stadium === 'vraag') { const alle = rondeVragen(q.ronde); S.schermen.vraag(`Vraag ${alle.indexOf(q) + 1} van ${alle.length}`, vraagTekst(q)); }
+      else if (popOpen) {
+        laag(popHTML(q, popBinnen(q, rol), { open: true, zacht: !!$('#pop'), onder: q.modus === 'waarde' && sc.stadium === 'vraag' ? waardeHTML() : '' }));
+        pasPop(); speelMedia();
+      } else if (finPagina) laag('<div class="waas donker"></div>' + vraagHTML(q, 'vraag', true, null));
+      else { laag(vraagHTML(q, f === 'open' ? sc.stadium : 'vraag', false, foto)); pasVraag(); }
+      if (!rol && !resultaat && !finPagina && sc.stadium === 'vraag') { const alle = rondeVragen(q.ronde); S.schermen.vraag(`Vraag ${alle.indexOf(q) + 1} van ${alle.length}`, vraagTekst(q)); }
     }
+    // dicht maar nog niet onthuld: de vraag blijft groot staan (na een resultaatvideo komt hij opnieuw binnen)
+    if (f === 'onthul' && !resultaat && sc.pop === 'vraag') popOp(sc, q, !(heeftAntwoordVideo(q) && sc.videoKlaar));
     S.shot('vraag', c.nieuw ? 1.8 : 0.8);
     if (q.modus === 'waarde') waardeZet(q);
     if (pot) zetPotLabel(potAantal(q));
@@ -6346,6 +6467,8 @@ SC.vraag = {
     }
     const n = nakijken(q);
     if (!c.animeer) {
+      // zonder animatie (terugbladeren, herladen): meteen de studio, zonder popup
+      const p = $('#pop'); if (p) { p.remove(); sc.pop = 'weg'; sc.popWeg = true; kop(sc); }
       zetTafel(ctx); if (getal) lijnZet(q, false, false);
       if (n) { sc.wachtOpBank = true; DUOS.forEach((d) => plakkaat(d.id, { tekst: plaatTekst(q, inzT(q.id, d.id)), stil: true })); onderPil(bankTekst(n)); S.alleStaat(''); return; }
       this.onthul(sc, q, false); this.betaal(sc, q, false);
@@ -6366,20 +6489,55 @@ SC.vraag = {
       sc.wachtOpBank = false; this.onthulEnBetaal(sc, q);
     });
   },
-  onthulEnBetaal(sc, q) { this.onthul(sc, q, true); later(3300, () => this.betaal(sc, q, true)); },
+  // Live onthullen: het antwoord komt groot in de popup. Na POP_HOUD (of meteen met →) schuift de popup weg
+  // en gaan de fiches over de tafel.
+  onthulEnBetaal(sc, q) {
+    if (sc.pop == null || sc.pop === 'weg') sc.pop = 'vraag';
+    popOp(sc, q, false);   // staat hij er al, dan blijft hij gewoon staan
+    sc.popWeg = false;
+    this.onthul(sc, q, true);
+    later(1300 + POP_HOUD, () => this.popWeg(sc, q));
+  },
+  popWeg(sc, q) {
+    if (sc.popWeg) return;
+    sc.popWeg = true; sc.pop = 'weg'; kop(sc);
+    const p = $('#pop');
+    if (p) {
+      p.classList.add('is-weg');   // de kaarten in de studio komen meteen tevoorschijn
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) p.remove();
+      else {
+        // de popup krimpt naar boven weg, de studio komt tevoorschijn
+        p.querySelector('.waas')?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 550, easing: 'ease-out', fill: 'forwards' });
+        p.querySelectorAll('.pop-vak, .pop-lint').forEach((el) => {
+          el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 450, delay: 120, fill: 'forwards' });
+          el.animate([{ transform: 'none' }, { transform: 'translateY(-170px) scale(.45)' }], { duration: 600, easing: 'cubic-bezier(.5, 0, .75, 0)', fill: 'forwards', composite: 'add' });
+        });
+        p.querySelectorAll('.pop-tab, .groot-onder').forEach((el) => el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 250, fill: 'forwards' }));
+        later(650, () => p.remove());
+      }
+    }
+    later(p ? 450 : 0, () => this.betaal(sc, q, true));
+  },
   onthul(sc, q, animeer) {
     const mc = q.soort === 'mc', getal = q.soort === 'getal';
     const goed = DUOS.filter((d) => (inzT(q.id, d.id) || {}).s === 'goed').map((d) => d.id);
+    // het antwoord in de studio (kaart, foto, getallenlijn) en in de grote popup
     const antwoord = () => {
       const af = antwoordFoto(q), kader = $('#laag .foto-kader');
-      if (af && kader && !kader.classList.contains('is-antwoord')) { kader.innerHTML = diaBinnen(q, 'antwoord'); kader.classList.add('is-antwoord'); if (!sc.videoKlaar) speelMedia(); }
+      if (af && kader && !kader.classList.contains('is-antwoord')) { kader.innerHTML = diaBinnen(q, 'antwoord'); kader.classList.add('is-antwoord'); if (!sc.videoKlaar && !$('#pop')) speelMedia(); }
       if (mc) {
-        const o = $('#laag .opties'); if (!o || o.classList.contains('is-onthuld')) return;
         const l = q.letter || String(q.antwoord || '').trim().charAt(0);
-        o.classList.add('is-onthuld'); const gg = o.querySelector(`.optie[data-l="${l}"]`); if (gg) gg.classList.add('is-goed');
-        DUOS.forEach((d) => { const x = inzT(q.id, d.id), k = x && x.a ? o.querySelector(`.optie[data-l="${x.a}"] .keuze`) : null; if (k) k.insertAdjacentHTML('beforeend', `<span class="fiche" style="--c:${d.kleur}"></span>`); });
+        $$('#laag .opties').forEach((o) => {
+          if (o.classList.contains('is-onthuld')) return;
+          o.classList.add('is-onthuld'); const gg = o.querySelector(`.optie[data-l="${l}"]`); if (gg) gg.classList.add('is-goed');
+          DUOS.forEach((d) => { const x = inzT(q.id, d.id), k = x && x.a ? o.querySelector(`.optie[data-l="${x.a}"] .keuze`) : null; if (k) k.insertAdjacentHTML('beforeend', `<span class="fiche" style="--c:${d.kleur}"></span>`); });
+        });
       } else if (getal) lijnZet(q, true, animeer);
-      else { const s = $('#laag .antwoord-slot'); if (s && !s.firstChild) { s.innerHTML = `<div class="onthulling${String(q.antwoord || '').length > 20 ? ' is-lang' : ''}">${esc(q.antwoord || '')}</div>`; pasVraag(); } }
+      else {
+        $$('#laag .antwoord-slot').forEach((s) => { if (!s.firstChild) s.innerHTML = `<div class="onthulling${String(q.antwoord || '').length > 20 ? ' is-lang' : ''}">${esc(q.antwoord || '')}</div>`; });
+        pasVraag(); pasPop();
+      }
+      popOnthul(sc, q);
     };
     const plaques = () => DUOS.forEach((d) => { const x = inzT(q.id, d.id), u = x && af(x) ? x.s : null; plakkaat(d.id, { tekst: plaatTekst(q, x), stil: true, uitslag: u }); lamp(d.id, u || null); });
     onderPil('');
@@ -6431,6 +6589,10 @@ SC.vraag = {
     }
     if (f === 'onthul' && sc.videoSpeelt) { sc.videoSpeelt = false; sc.videoKlaar = true; this.toon(sc, f, { nieuw: false, animeer: true }); return true; }
     if (f === 'onthul' && sc.wachtOpBank) { melding('De bank kijkt nog na. De show gaat zelf verder zodra alles is nagekeken.'); return true; }
+    // het antwoord staat groot in beeld: → gaat meteen door naar de studio en de uitbetaling
+    if (f === 'onthul' && sc.pop === 'antwoord') { this.popWeg(sc, q); return true; }
+    // de tromgeroffel loopt nog: even wachten, het antwoord komt zo (na 9 seconden mag je toch door)
+    if (f === 'onthul' && sc.pop === 'vraag' && performance.now() - (sc.popSinds || 0) < 9000) return true;
     return false;
   },
   terug(sc, f) {
