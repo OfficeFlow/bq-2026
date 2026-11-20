@@ -594,6 +594,22 @@ button { font: inherit; }
 @media (prefers-reduced-motion: reduce) { .pop-vak, .pop.met-lint .pop-lint, .dia.is-antwoord > img { transition: none !important; animation: none !important; } }
 /* zolang de popup staat: de kaarten van de studio erachter niet laten doorschemeren */
 #laag:has(> .pop:not(.is-weg)) > :not(.pop) { visibility: hidden; }
+
+/* opnieuw beginnen: knop in de bediening en een bevestigingsvenster */
+#bediening button[hidden] { display: none; }
+#bediening #b-wis { color: #FFD3D9; }
+#bediening #b-wis:hover { background: rgba(200, 40, 63, .28); }
+#wissen { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: rgba(1, 8, 10, .72); }
+#wissen[hidden] { display: none; }
+#wissen .doos { width: min(560px, calc(100vw - 32px)); padding: 30px 32px 28px; border-radius: 22px; }
+#wissen h2 { margin: 0 0 12px; font: 800 34px/1.1 var(--tekst); color: var(--inkt); }
+#wissen p { margin: 0; font: 500 18px/1.45 var(--tekst); color: var(--inkt); }
+#wissen .knoppen { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+#wissen button { padding: 13px 22px; border: 0; border-radius: 999px; font: 700 17px/1 var(--tekst); cursor: pointer; }
+#wissen .nee { background: var(--inkt); color: var(--goud-licht); }
+#wissen .ja { background: var(--eozine); color: #fff; }
+#wissen .ja:disabled { opacity: .7; cursor: progress; }
+#wissen button:focus-visible { outline: 3px solid var(--goud); outline-offset: 3px; }
 </style></head><body><div id="podium"><div id="stage">
   <canvas id="gl" aria-hidden="true"></canvas>
   <div id="labels" aria-hidden="true"></div>
@@ -635,6 +651,7 @@ button { font: inherit; }
   <button id="b-geluid" type="button" aria-pressed="true" aria-label="Geluid"><svg class="aan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg><svg class="uit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9l5 6M22 9l-5 6"/></svg></button>
   <button id="b-map" type="button" aria-label="Map met video's kiezen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></button>
   <button id="b-scherm" type="button" aria-label="Volledig scherm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></button>
+  <button id="b-wis" type="button" aria-haspopup="dialog" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg><span>Opnieuw beginnen</span></button>
   <button id="b-hulp" type="button" aria-label="Sneltoetsen tonen" aria-haspopup="dialog">?</button>
   <span class="live" id="live"><i></i><span>Live</span></span>
 </div>
@@ -651,6 +668,13 @@ button { font: inherit; }
     </dl>
     <p style="margin:16px 0 0;font:500 16px/1.4 var(--tekst)">Mark kijkt de open antwoorden na op zijn telefoon. De show wacht daarop en gaat dan zelf verder. Bij de BN'ers maakt Spatie de foto een stap scherper.</p>
     <button class="sluit" type="button" id="hulp-sluit">Sluiten</button>
+  </div>
+</div>
+<div id="wissen" hidden role="dialog" aria-modal="true" aria-labelledby="wissen-kop">
+  <div class="doos porselein">
+    <h2 id="wissen-kop">Schoon opnieuw beginnen?</h2>
+    <p>Alle antwoorden, fiches, duels en aanmeldingen worden gewist. De show begint weer bij het aanmelden. Telefoons die nog openstaan gaan vanzelf terug naar het aanmelden.</p>
+    <div class="knoppen"><button type="button" class="nee" id="wissen-nee">Annuleren</button><button type="button" class="ja" id="wissen-ja">Alles wissen</button></div>
   </div>
 </div>
 <div id="sr" class="sr" aria-live="polite"></div>
@@ -6099,25 +6123,16 @@ SC.lobby = {
     $('#lobby-tal-tekst').textContent = N === 1 ? 'duo binnen' : "duo's binnen";
     $('#laag .lobby').classList.toggle('is-klaar', N >= 2);
   },
-  // Staan er nog antwoorden van een eerdere test in de quiz, dan gaan die vragen niet meer open op de telefoons.
+  // Staat er nog een eerdere test in de quiz (antwoorden, fiches, duels of een gestarte quiz)? Dan eerst wissen.
   oudeTest() {
     const el = $('#oud-test'); if (!el) return;
     const n = DB ? DB.inz.length : 0;
-    if (!n) { el.hidden = true; el.innerHTML = ''; return; }
+    const oud = !!DB && (n > 0 || (DB.boek || []).length > 0 || (DB.duels || []).length > 0 || DB.vraag_id != null);
+    if (!oud) { el.hidden = true; el.innerHTML = ''; return; }
     if (!el.hidden) return;
     el.hidden = false;
-    el.innerHTML = `<b>Er staan nog ${n} ${n === 1 ? 'antwoord' : 'antwoorden'} van een eerdere test in de quiz.</b><span>Daardoor gaan die vragen niet open op de telefoons. Wis ze voordat je begint. De duo's melden zich daarna opnieuw aan.</span><button type="button" id="wis-test">Wis de oude test</button>`;
-    const knop = $('#wis-test'); let zeker = false, klok = 0;
-    knop.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      if (!zeker) { zeker = true; knop.textContent = 'Zeker? Klik nog een keer'; knop.classList.add('is-zeker'); clearTimeout(klok); klok = setTimeout(() => { zeker = false; knop.textContent = 'Wis de oude test'; knop.classList.remove('is-zeker'); }, 5000); return; }
-      knop.disabled = true; knop.textContent = 'Bezig met wissen…';
-      try {
-        await host('quiz_host_reset', { p_zeker: 'RESET' });
-        try { Object.keys(sessionStorage).filter((k) => k.startsWith('bq_rad_') || k.startsWith('bq_show_')).forEach((k) => sessionStorage.removeItem(k)); } catch (x) { /* geen opslag */ }
-        location.reload();
-      } catch (x) { knop.disabled = false; knop.textContent = 'Wis de oude test'; melding('Wissen lukte niet: ' + x.message); }
-    });
+    el.innerHTML = `<b>${n ? `Er staan nog ${n} ${n === 1 ? 'antwoord' : 'antwoorden'} van een eerdere test in de quiz.` : 'Er staat nog een eerdere test in de quiz.'}</b><span>Daardoor gaan vragen niet goed open op de telefoons. Wis die voordat je begint. De duo's melden zich daarna opnieuw aan.</span><button type="button" id="wis-test">Wis de oude test</button>`;
+    $('#wis-test').addEventListener('click', (e) => { e.stopPropagation(); vraagWissen(true); });
   },
   update() { this.oudeTest(); },
   nieuweDuos(ids) {
@@ -7092,7 +7107,7 @@ async function start() {
     const i = SCRIPT.findIndex((sc) => sc.vid === DB.vraag_id && (sc.type === 'vraag' || sc.type === 'gok'));
     if (i >= 0) begin = STAPPEN.findIndex((s) => s.i === i);
   }
-  gestart = true;
+  gestart = true; $('#b-wis').hidden = false;
   window.SHOW = { naar, S, get STAPPEN() { return STAPPEN; }, SCRIPT, get DB() { return DB; }, get pos() { return pos; }, volgende };
   await naar(Math.max(0, Math.min(begin, STAPPEN.length - 1)), false);
   const duelOpen = DB.duels && DB.duels.find((d) => d.fase === 'open');
@@ -7103,6 +7118,22 @@ async function start() {
 }
 
 /* ---------- bediening ---------- */
+// Alles wissen: antwoorden, fiches, duels, aanmeldingen en de stand van de show. Telefoons die nog openstaan
+// gaan vanzelf terug naar het aanmelden. Daarna laadt de show opnieuw, schoon bij het aanmelden.
+async function wisAlles(knop, tekst) {
+  knop.disabled = true; knop.textContent = 'Bezig met wissen…';
+  try {
+    await host('quiz_host_reset', { p_zeker: 'RESET' });
+    try { Object.keys(sessionStorage).filter((k) => k.startsWith('bq_rad_') || k.startsWith('bq_show_')).forEach((k) => sessionStorage.removeItem(k)); } catch (x) { /* geen opslag */ }
+    location.reload();
+  } catch (x) { knop.disabled = false; knop.textContent = tekst; melding('Wissen lukte niet: ' + x.message); }
+}
+// Opnieuw beginnen gaat altijd via een bevestiging, zodat het nooit per ongeluk gebeurt (ook niet midden in de quiz).
+const wisEl = $('#wissen');
+function vraagWissen(open = true) {
+  if (!open && wisEl.contains(document.activeElement)) document.activeElement.blur();   // spatie stuurt daarna meteen de show weer
+  wisEl.hidden = !open; if (open) $('#wissen-nee').focus();
+}
 function pas() {
   SCHAAL = Math.min(innerWidth / W, innerHeight / H);
   stage.style.transform = `translate(-50%, -50%) scale(${SCHAAL})`;
@@ -7117,6 +7148,7 @@ addEventListener('keydown', (e) => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   geluid.ontgrendel();
   if (!hulpEl.hidden) { if (e.key === 'Escape' || e.key === 'h' || e.key === 'H') { e.preventDefault(); hulp(false); } return; }
+  if (!wisEl.hidden) { if (e.key === 'Escape') { e.preventDefault(); vraagWissen(false); } return; }
   const a = document.activeElement;
   if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA')) return;
   if (!gestart) return;
@@ -7139,6 +7171,10 @@ $('#b-geluid').addEventListener('click', (e) => { e.stopPropagation(); wisselGel
 $('#b-scherm').addEventListener('click', (e) => { e.stopPropagation(); volledig(); });
 $('#b-map').addEventListener('click', (e) => { e.stopPropagation(); $('#map').click(); });
 $('#b-hulp').addEventListener('click', (e) => { e.stopPropagation(); hulp(true); });
+$('#b-wis').addEventListener('click', (e) => { e.stopPropagation(); vraagWissen(true); });
+$('#wissen-nee').addEventListener('click', () => vraagWissen(false));
+$('#wissen-ja').addEventListener('click', () => wisAlles($('#wissen-ja'), 'Alles wissen'));
+wisEl.addEventListener('click', (e) => { if (e.target === wisEl) vraagWissen(false); });
 $('#hulp-sluit').addEventListener('click', () => hulp(false));
 hulpEl.addEventListener('click', (e) => { if (e.target === hulpEl) hulp(false); });
 $('#map').addEventListener('change', (e) => {
